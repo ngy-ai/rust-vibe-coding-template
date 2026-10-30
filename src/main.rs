@@ -1,9 +1,12 @@
 //! 应用入口：先初始化日志，再执行业务逻辑。
 //!
+//! 输出通道固定分工：stdout 只放业务数据，日志一律写 stderr（`production` 只写文件）。
+//! CLI 契约测试因此可以直接断言 stdout，不受日志干扰。
+//!
 //! 日志由 `ngy-utils-tracing` 统一配置，输出形态随应用模式变化：
-//! - `development`：控制台（pretty，带文件名/行号/线程），详尽到单个步骤
-//! - `test`：控制台 + 文件（JSON）
-//! - `production`：文件（JSON，按天轮转），只保留必要记录
+//! - `development`：控制台（pretty，带文件名/行号/线程，写 stderr），详尽到单个步骤
+//! - `test`：控制台（写 stderr）+ 文件（JSON）
+//! - `production`：文件（JSON，按天轮转），只保留必要记录，stdout 与 stderr 均无日志
 
 use std::process::ExitCode;
 use std::time::Instant;
