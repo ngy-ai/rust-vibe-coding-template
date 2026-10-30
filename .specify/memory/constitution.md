@@ -1,50 +1,90 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Rust AI Template Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. 源码文件规模与拆分 (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+源码文件不能过大：大文件既难阅读也难修改，工具读一次就吃掉上下文。
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- **单个源码文件不得超过约 700 行**。
+- 超过上限就必须按职责拆成子模块，不要继续往上堆。
+- 新增代码时如果目标文件已经接近这个上限，先拆再改，不允许"先写完再说"。
+- 拆分是独立的改动：拆完后单独 `git commit`，不与功能改动混在同一次提交里。
+- 行数按文件实际内容计（含注释与文档注释），不靠压缩格式、删除注释或合并语句来达标。
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: 约 700 行是一次可以完整读完、可以安全重构的上限；超过之后人工评审质量与 AI
+工具的上下文效率同时下降。把"先拆再改"写成前置条件，才能防止上限被渐进式突破。
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. 代码质量与可维护性 (NON-NEGOTIABLE)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+代码必须靠命名与结构自解释；注释只解释为什么，不复述做了什么。
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **合并门禁**：每次变更必须通过 `cargo fmt --check` 与
+  `cargo clippy --all-targets --all-features -- -D warnings`，且不得靠新增 lint
+  抑制属性来换取通过。
+- **契约文档**：公共接口（`pub fn`、`pub trait`、模块对外 API）必须用文档注释
+  写明契约——输入、输出、错误模式，以及会 panic 的条件。
+- **死代码**：不得合并。以下情形按定义不属于死代码，无需申报：trait 实现、
+  `#[cfg(...)]` 平台/feature 分支、`#[cfg(test)]` 辅助代码，以及标注了来源与
+  再生成命令的生成代码。其余确需保留的未使用项，只允许
+  `#[expect(dead_code, reason = "<理由>，见 #<issue>")]`；
+  `#[allow(dead_code)]` 与没有 issue 归属的理由一律不接受。
+- **被注释掉的代码**：不得合并，不再使用的实现直接删除，留档由 git 历史承担。
+  解释为何不采用某方案的文字注释不受此限；rustdoc 中标注 `no_run` 或 `ignore`
+  的示例代码不受此限。
+- **TODO / FIXME**：只允许 issue 归属形式，固定格式为
+  `TODO(#<issue>): <说明>`，说明中必须给出触发条件或清理期限。裸 `TODO:`、
+  `TODO(TBD)`、`TODO(later)` 一类无归属写法不得合并；对应 issue 关闭时，必须在
+  同一提交内删除该 TODO。
+- **复杂度**：单个函数圈复杂度保持低位；函数超出合理规模时必须在合并前分解，
+  不得以以后再重构为由延期。
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: 代码被阅读的次数远多于被编写的次数，而存在却不生效的东西
+（死代码、注释掉的实现、无主 TODO）利息最高——它们不进测试覆盖、不参与编译与
+lint 检查、也没有人负责，却持续向读者传递错误预期。把标准前移到合并时执行，
+才能防止债务缓慢累积到代码库无法维护。豁免只给工具看不见用途的客观情形，不给
+以后再说的裁量权；`#[expect]` 在 lint 不再触发时会自动报警，使豁免自带过期机制。
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Rust 代码组织约定
+
+### 模块拆分布局
+
+- 拆分沿用 Rust 2018+ 的模块布局：`foo.rs` 拆成 `foo.rs`（模块根）加若干 `foo/*.rs`。
+- 不新增 `mod.rs`：`foo.rs` 与 `foo/` 目录并存即可，子模块由 `foo.rs` 中的 `mod` 声明挂载。
+- 模块根（`lib.rs`、`main.rs`、`foo.rs`）只放文档、`mod` 声明和对外导出（`pub use`、
+  `pub use foo::xxx;` 这类重导出）；共享类型必须单独拆到 `foo/types.rs`，不在模块根就地定义。
+- 实现按主题分文件：`description.rs`（描述与参数 schema）、按职责命名的主题模块、
+  `tool.rs`（工厂/入口）。同一类型的实现可以分散在多个文件里，不受"一个类型一个文件"限制。
+
+### 测试布局
+
+- 测试同样拆分，并镜像源码布局：
+  - 单元测试留在被测模块内，用 `#[cfg(test)] mod tests` 就近覆盖私有实现。
+  - 集成测试放 `tests/tools/<tool>_test.rs`，与源码目录 `src/tools/<tool>/` 一一对应。
+  - 跨工具的集成测试留在 `tests/tools/`。
+- 测试文件名必须带 `_test` 后缀，例如 `exec_command.rs` 的测试叫 `exec_command_test.rs`。
+- `tests/` 下的每个文件都是独立 crate，公共测试辅助代码放在 `tests/common/` 或用
+  `mod common;` 显式引入，不要在测试文件之间互相 `use`。
+
+## 开发流程与质量门禁
+
+- 纯拆分提交只做文件移动、`mod` 声明与再导出调整，不改变行为；行为改动放在后续提交里。
+- 拆分提交必须保证 `cargo build` 与 `cargo test` 通过，且不改变公开 API 语义。
+- 代码评审必须检查：改动后的文件是否 ≤ 700 行、文件是否按职责拆分、工具模块是否只依赖
+  共享基础设施、测试是否镜像源码布局。
+- 新增文件前先确认它属于哪个模块、是否应该并入已有文件；只为"看起来更小"而制造碎片化
+  同样不合规。
+- 违规的大文件不得以"稍后重构"为由合入。
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- 本 Constitution 优先于其他开发惯例；与其他实践冲突时，以本文件为准。
+- 修订必须说明理由、影响范围和迁移方案，并按语义化版本递增：
+  - MAJOR：删除或重定义原则，产生不兼容的治理变更。
+  - MINOR：新增原则或章节，或对现有指导作实质性扩展。
+  - PATCH：措辞澄清、笔误修正等非语义性调整。
+- 所有 PR / 评审必须验证合规性，其中文件规模上限、模块边界、测试布局、代码质量门禁
+  （fmt / clippy / 契约文档 / 死代码与 TODO 归属）为强制检查项。
+- 复杂度必须可被证明是必要的；无法说明理由的额外抽象或跨模块依赖不予合入。
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.1.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-30

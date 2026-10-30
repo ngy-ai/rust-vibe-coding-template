@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  format:
+    name: cargo fmt --check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show && rustup component add rustfmt clippy
+      - name: Check formatting
+        run: cargo fmt --check
+
+  lint:
+    name: cargo clippy -D warnings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show && rustup component add rustfmt clippy
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Install cargo-machete
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-machete
+      - name: Check unused dependencies
+        run: cargo machete
+
+  test:
+    name: cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show && rustup component add rustfmt clippy
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Run tests
+        run: cargo test --all-targets --all-features
+
+  governance:
+    name: Constitution governance scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Scan TODO ownership and forbidden lint suppressions
+        shell: bash
+        run: |
+          set -uo pipefail
+          status=0
+
+          # Constitution II：TODO / FIXME 只允许 `TODO(#<issue>): <说明>`，且说明不得为空
+          untraceable=$(git grep -nE '\b(TODO|FIXME)\b' -- '*.rs' \
+            | grep -vE '\b(TODO|FIXME)\(#[0-9]+\):[[:space:]]*[^[:space:]]' || true)
+          if [ -n "$untraceable" ]; then
+            echo "::error::TODO/FIXME 必须写成 TODO(#<issue>): <说明>；禁止裸 TODO、TODO(TBD)、TODO(later) 等无归属写法。"
+            echo "$untraceable"
+            status=1
+          fi
+
+          # Constitution II：死代码豁免只接受 #[expect(dead_code, reason = "...见 #<issue>")]
+          suppressions=$(git grep -nE '#!?\[allow\(dead_code' -- '*.rs' || true)
+          if [ -n "$suppressions" ]; then
+            echo "::error::禁止 #[allow(dead_code)]，请改用 #[expect(dead_code, reason = \"<理由>，见 #<issue>\")]。"
+            echo "$suppressions"
+            status=1
+          fi
+
+          exit $status
