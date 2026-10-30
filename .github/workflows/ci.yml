@@ -85,6 +85,31 @@ jobs:
           fi
 
           exit $status
+      - name: Enforce source file size limits
+        shell: bash
+        run: |
+          set -uo pipefail
+          status=0
+          limit=700
+          warn=600
+
+          # 宪法 I：src/ 与 tests/ 下的手写 *.rs 单文件上限 700 行，600 行起预警；
+          # 文件头 5 行内标注 @generated 的生成产物不计入。
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            if head -n 5 "$file" | grep -q '@generated'; then
+              continue
+            fi
+            lines=$(awk 'END { print NR + 0 }' "$file")
+            if [ "$lines" -gt "$limit" ]; then
+              echo "::error file=$file::${lines} 行，超过宪法 I 的 ${limit} 行上限"
+              status=1
+            elif [ "$lines" -ge "$warn" ]; then
+              echo "::warning file=$file::${lines} 行，已达宪法 I 的 ${warn} 行预警线，新增代码前先拆"
+            fi
+          done < <(git ls-files -- 'src/*.rs' 'src/**/*.rs' 'tests/*.rs' 'tests/**/*.rs')
+
+          exit $status
 
   audit:
     name: cargo audit
