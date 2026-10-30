@@ -86,9 +86,25 @@ cargo machete
 ## 作为模板使用
 
 1. 改 `Cargo.toml` 的 `name`，crate 名会自动变成下划线形式
-2. 第一次 `/speckit.plan` 时确认宪法 V 的默认预算是否沿用，未确认即视为沿用
-3. 按需调整 `ci.yml` 的工具链版本与 job
-4. 重写本 README
+2. 更新 `.github/CODEOWNERS`，把所有者换成你自己或团队
+3. 第一次 `/speckit.plan` 时确认宪法 V 的默认预算是否沿用，未确认即视为沿用
+4. 按需调整 `ci.yml` 的工具链版本与 job
+5. 配置分支保护（见下），否则「变更必须走 PR」只是口头约定
+6. 重写本 README
+
+### 分支保护（只能在 GitHub 上手动开启）
+
+仓库里的任何文件都管不住这条，只有分支保护能让宪法「拉取请求」一节真正生效：
+
+1. Settings → Branches → Add branch protection rule，目标分支 `main`；
+2. 勾选 **Require a pull request before merging**。单开发者仓库可把批准数设为 0，
+   由 Governance 里的单开发者条款以自我证明兜底；
+3. 勾选 **Require status checks to pass**，并选中全部六个：
+   `cargo fmt --check`、`cargo clippy -D warnings`、`cargo test`、
+   `Constitution governance scan`、`cargo audit`、`Secret scan`；
+4. 勾选 **Do not allow bypassing the above settings**，否则管理员仍能直接推送。
+
+开启之前，直接 `git push origin main` 是会成功的——本模板自身的提交历史就是例子。
 
 ## 容易踩的约定
 
