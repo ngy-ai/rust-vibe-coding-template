@@ -3,6 +3,7 @@
 
 # 核心模块：变更需要两次批准，其中至少一次来自代码所有者
 # （见 .specify/memory/constitution.md 的「拉取请求」一节）
+/src/ @ningguanyi
 /.specify/memory/constitution.md @ningguanyi
 /.github/ @ningguanyi
 /Cargo.toml @ningguanyi
