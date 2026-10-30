@@ -1,0 +1,95 @@
+# rust-vibe-coding-template
+
+用自然语言驱动 AI 开发 Rust 项目的骨架：工具链、格式化、lint、测试与治理门禁已预置，
+开发规范以 [`.specify/memory/constitution.md`](.specify/memory/constitution.md) 为准。
+
+## 环境要求
+
+- [rustup](https://rustup.rs/)；Rust 版本由 `rust-toolchain.toml` 固定为 1.97，
+  rustfmt 与 clippy 随工具链安装
+- 本地想跑依赖检查时装 `cargo install cargo-machete --locked`（CI 会自动装）
+
+## 快速开始
+
+```bash
+cargo run
+```
+
+## 目录结构
+
+| 路径 | 作用 |
+| --- | --- |
+| `src/` | 源码；模块按职责命名，测试镜像源码布局 |
+| `.specify/memory/constitution.md` | 项目宪法，五条原则的唯一定义处 |
+| `.specify/templates/` | spec-kit 的 spec / plan / tasks / checklist 模板 |
+| `.specify/scripts/` | spec-kit 的 PowerShell 与 Python 辅助脚本 |
+| `.codebuddy/commands/` | `/speckit.*` 命令定义 |
+| `.github/workflows/ci.yml` | CI：格式、lint + 依赖、测试、宪法治理扫描 |
+| `rust-toolchain.toml` | 固定工具链与组件 |
+| `rustfmt.toml` | `edition` / `style_edition` = 2024 |
+| `Cargo.toml` | 包信息与 MSRV（`rust-version`） |
+
+## 质量门禁
+
+与 `ci.yml` 的四个 job 一一对应：
+
+| 检查 | 对应原则 |
+| --- | --- |
+| `cargo fmt --check` | II |
+| `cargo clippy --all-targets --all-features -- -D warnings` | II |
+| `cargo machete`（未使用依赖） | II |
+| `cargo test --all-targets --all-features` | III |
+| TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
+
+本地一次跑完：
+
+```bash
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-targets --all-features
+cargo machete
+```
+
+## 项目规范
+
+宪法五条原则：
+
+| 编号 | 原则 | 要点 |
+| --- | --- | --- |
+| I | 源码文件规模与拆分 | 单文件约 700 行上限，接近上限先拆再改 |
+| II | 代码质量与可维护性 | 公共接口写契约、不留死代码、TODO 必须带 issue |
+| III | 测试先行开发 | 先写测试并看到它失败，再用最少实现转绿 |
+| IV | 对外接触面一致性 | CLI / 库 API / 错误消息统一，错误必须可执行 |
+| V | 性能与效率 | 默认预算、禁止二次复杂度与无界缓冲、变更须附测量 |
+
+规则细节只在宪法里维护，本文件不复述，避免两处漂移。
+
+## spec-kit 工作流
+
+典型顺序：
+
+1. `/speckit.constitution` —— 修订治理原则（可选）
+2. `/speckit.specify` —— 写清要做什么，产出 `specs/<feature>/spec.md`
+3. `/speckit.clarify` —— 消除规格里的歧义
+4. `/speckit.plan` —— 技术方案，产出 `plan.md`，含 Constitution Check
+5. `/speckit.tasks` —— 拆成可执行任务
+6. `/speckit.implement` —— 执行
+
+辅助命令：`/speckit.analyze`、`/speckit.checklist`、`/speckit.taskstoissues`、
+`/speckit.converge`。
+
+## 作为模板使用
+
+1. 改 `Cargo.toml` 的 `name`，crate 名会自动变成下划线形式
+2. 第一次 `/speckit.plan` 时确认宪法 V 的默认预算是否沿用，未确认即视为沿用
+3. 按需调整 `ci.yml` 的工具链版本与 job
+4. 重写本 README
+
+## 容易踩的约定
+
+- 测试镜像源码：`src/<module>/` 对应 `tests/<module>_test.rs`
+- TODO 只能写成 `TODO(#<issue>): 说明`；裸 `TODO:`、`TODO(TBD)` 会被 CI 拦下
+- 死代码豁免只接受 `#[expect(dead_code, reason = "<理由>，见 #<issue>")]`，
+  `#[allow(dead_code)]` 会被 CI 拦下
+- 未使用的依赖会让 `cargo machete` 失败，先删依赖再加代码，不要反过来
+- 基准工具（`criterion`、`hyperfine`）只在真正要测量时引入，且与第一个基准同时提交
