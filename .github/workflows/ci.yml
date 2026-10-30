@@ -85,3 +85,63 @@ jobs:
           fi
 
           exit $status
+
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show && rustup component add rustfmt clippy
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - name: Check known vulnerabilities
+        run: cargo audit
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Scan tracked files for credentials
+        shell: bash
+        run: |
+          set -uo pipefail
+          status=0
+
+          report() {
+            echo "::error::$1"
+            echo "$2"
+            status=1
+          }
+
+          # 宪法 VIII：本地配置不得入库
+          tracked_env=$(git ls-files | grep -E '(^|/)\.env$' || true)
+          if [ -n "$tracked_env" ]; then
+            report ".env 不得纳入版本控制" "$tracked_env"
+          fi
+
+          # 私钥块；正则中的字符类同时避免匹配到本文件自身
+          private_key=$(git grep -nIE -- '-----BEGIN [A-Z0-9 ]*PRIV[A]TE KEY-----' || true)
+          if [ -n "$private_key" ]; then
+            report "检测到私钥块" "$private_key"
+          fi
+
+          cloud_key=$(git grep -nIE -- 'AKIA[0-9A-Z]{16}' || true)
+          if [ -n "$cloud_key" ]; then
+            report "检测到疑似云厂商访问密钥" "$cloud_key"
+          fi
+
+          forge_token=$(git grep -nIE -- 'gh[pousr]_[A-Za-z0-9]{20,}' || true)
+          if [ -n "$forge_token" ]; then
+            report "检测到疑似代码托管平台令牌" "$forge_token"
+          fi
+
+          chat_token=$(git grep -nIE -- 'xox[baprs]-[0-9A-Za-z-]{10,}' || true)
+          if [ -n "$chat_token" ]; then
+            report "检测到疑似协作平台令牌" "$chat_token"
+          fi
+
+          exit $status

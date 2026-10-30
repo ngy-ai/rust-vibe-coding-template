@@ -39,6 +39,8 @@ cargo run
 | `cargo clippy --all-targets --all-features -- -D warnings` | II |
 | `cargo machete`（未使用依赖） | II |
 | `cargo test --all-targets --all-features` | III |
+| `cargo audit`（依赖漏洞） | VIII |
+| 机密扫描（私钥块、云密钥、平台令牌、误提交的 `.env`） | VIII |
 | TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
 
 本地一次跑完：
@@ -52,7 +54,7 @@ cargo machete
 
 ## 项目规范
 
-宪法七条原则：
+宪法八条原则：
 
 | 编号 | 原则 | 要点 |
 | --- | --- | --- |
@@ -63,6 +65,7 @@ cargo machete
 | V | 性能与效率 | 默认预算、禁止二次复杂度与无界缓冲、变更须附测量 |
 | VI | 简单性与 YAGNI | 默认单 crate、不预留配置与推测性抽象、三行重复优于过早抽象 |
 | VII | 可观测性与结构化日志 | 结构化字段、错误只记一次、日志通道按模式决定、不记敏感信息 |
+| VIII | 安全基线 | 边界校验输入、禁止拼接注入、机密不入库、依赖扫漏洞 |
 
 规则细节只在宪法里维护，本文件不复述，避免两处漂移。
 
