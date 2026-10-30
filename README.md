@@ -20,7 +20,8 @@ cargo run
 | 路径 | 作用 |
 | --- | --- |
 | `src/` | 源码；模块按职责命名，测试镜像源码布局 |
-| `.specify/memory/constitution.md` | 项目宪法，五条原则的唯一定义处 |
+| `.specify/memory/constitution.md` | 项目宪法，八条原则的唯一定义处 |
+| `AGENTS.md` | 给编码代理的速查入口（索引，不含细则） |
 | `.specify/templates/` | spec-kit 的 spec / plan / tasks / checklist 模板 |
 | `.specify/scripts/` | spec-kit 的 PowerShell 与 Python 辅助脚本 |
 | `.codebuddy/commands/` | `/speckit.*` 命令定义 |
