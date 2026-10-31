@@ -12,19 +12,17 @@ use std::process::ExitCode;
 use std::time::Instant;
 
 use ngy_utils_tracing::{InitOptions, init};
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
-/// 环境变量前缀：模式读取 `NGY_APP_MODE`，日志目录读取 `NGY_LOG_DIR`，其余同理。
-///
-/// 前缀隔离可以避免误读其他程序使用的同名变量；`RUST_LOG` 是唯一不带前缀的例外。
-const ENV_PREFIX: &str = "NGY_";
+mod common;
+mod run;
 
 fn main() -> ExitCode {
     let started = Instant::now();
 
     // `InitResult` 持有文件日志的 WorkerGuard 和后台清理任务，必须存活到进程结束才不丢日志。
     let logging = match init(
-        InitOptions::new(ENV_PREFIX)
+        InitOptions::new(common::ENV_PREFIX)
             // 调试构建下的默认级别：项目自身 crate 用 debug，其余依赖回退到 info，可被 RUST_LOG 覆盖。
             // `CARGO_CRATE_NAME` 已经是 tracing 使用的 target 名（连字符转下划线）。
             .crates(vec![env!("CARGO_CRATE_NAME").to_string()]),
@@ -44,7 +42,7 @@ fn main() -> ExitCode {
     );
 
     // 错误只在这一层记录一次：内部各层负责返回错误，不自行打点，避免重复日志。
-    let exit_code = match run() {
+    let exit_code = match run::run() {
         Ok(()) => {
             info!(
                 result = "ok",
@@ -67,16 +65,4 @@ fn main() -> ExitCode {
     // 显式释放，确保文件日志在进程退出前完成 flush。
     drop(logging);
     exit_code
-}
-
-/// 业务逻辑入口。
-///
-/// 出错时返回错误而不是自行记录，由 [`main`] 在边界处统一记录一次。
-fn run() -> anyhow::Result<()> {
-    info!("执行业务逻辑");
-    debug!(
-        step = 1,
-        "调试信息仅在 development 模式或 RUST_LOG 显式开启时可见"
-    );
-    Ok(())
 }
