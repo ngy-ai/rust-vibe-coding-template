@@ -69,6 +69,25 @@ jobs:
       - name: Run clippy for the desktop client
         run: cargo clippy -p app-desktop --all-targets -- -D warnings
 
+  mobile:
+    name: mobile (flutter)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      # Rust 侧由 lint job 的 cargo clippy 覆盖，这里只校验 Dart 侧与生成物是否可用。
+      - name: Resolve Dart dependencies
+        run: flutter pub get
+      - name: Analyze and test
+        run: |
+          flutter analyze
+          flutter test
+
   governance:
     name: Constitution governance scan
     runs-on: ubuntu-latest

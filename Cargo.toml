@@ -1,9 +1,15 @@
 [workspace]
 resolver = "3"
-members = ["crates/core", "crates/cli", "crates/server", "crates/desktop"]
-# `cargo run` / `cargo test` 默认作用于无图形依赖的三个 crate：桌面端依赖图形栈，
+members = [
+    "crates/core",
+    "crates/cli",
+    "crates/server",
+    "crates/mobile",
+    "crates/desktop",
+]
+# `cargo run` / `cargo test` 默认作用于无图形依赖的四个 crate：桌面端依赖图形栈，
 # 在 Linux CI runner 上需要额外系统库，因此由单独的 Windows job 校验。
-default-members = ["crates/core", "crates/cli", "crates/server"]
+default-members = ["crates/core", "crates/cli", "crates/server", "crates/mobile"]
 
 [workspace.package]
 version = "0.1.0"

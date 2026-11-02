@@ -12,9 +12,10 @@
 ## 快速开始
 
 ```bash
-cargo run                 # CLI（默认成员），默认 --input hello
-cargo run -p app-server   # 服务端，默认 127.0.0.1:8080
-cargo run -p app-desktop  # 桌面端，gpui-kit 窗口
+cargo run                        # CLI（默认成员），默认 --input hello
+cargo run -p app-server          # 服务端，默认 127.0.0.1:8080
+cargo run -p app-desktop         # 桌面端，gpui-kit 窗口
+cd apps/mobile && flutter run    # 手机端，需要 Flutter SDK 与 Android NDK
 ```
 
 服务端只有一个端点，契约与 CLI 共用同一份文案：
@@ -29,6 +30,20 @@ curl -s localhost:8080/api/execute \
 错误体固定为 `{"error":{"kind":"...","message":"..."}}`：`kind` 给程序判断，
 `message` 与 CLI 的报错同源，空白输入与超长输入都返回 422。
 
+### 手机端（Flutter + flutter_rust_bridge）
+
+`apps/mobile` 是 Flutter 工程，`crates/mobile` 是 Rust 绑定层，两者由
+`apps/mobile/flutter_rust_bridge.yaml` 连接。Dart 绑定是生成物，改完 Rust 接口必须重新生成：
+
+```bash
+cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked   # 与两端版本严格一致
+cd apps/mobile
+flutter_rust_bridge_codegen generate
+```
+
+生成结果落在 `apps/mobile/lib/src/rust/`，不要手改。Android 构建由 cargokit 调 cargo，
+需要 Android SDK/NDK；iOS 只能在 macOS 上出包。
+
 ## 目录结构
 
 | 路径 | 作用 |
@@ -36,7 +51,9 @@ curl -s localhost:8080/api/execute \
 | `crates/core/` | 三端共享的业务逻辑与错误类型；不依赖 GUI、HTTP 与平台 API |
 | `crates/cli/` | 命令行客户端（clap）：负责参数、stdout/stderr 分工与退出码 |
 | `crates/server/` | 服务端（axum）：`POST /api/execute`，错误体与 CLI 文案同源 |
+| `crates/mobile/` | 移动端绑定层（flutter_rust_bridge）：只转调 `app-core` |
 | `crates/desktop/` | 桌面客户端（gpui-kit）：窗口只做展示与调用 `app-core` |
+| `apps/mobile/` | Flutter 工程：UI、`rust_builder` 打包插件与生成的 Dart 绑定 |
 | `.specify/memory/constitution.md` | 项目宪法，八条原则的唯一定义处 |
 | `AGENTS.md` | 给编码代理的速查入口（索引，不含细则） |
 | `.specify/templates/` | spec-kit 的 spec / plan / tasks / checklist 模板 |
@@ -58,6 +75,7 @@ curl -s localhost:8080/api/execute \
 | `cargo machete`（未使用依赖） | II |
 | `cargo test --all-targets --all-features` | III |
 | `cargo clippy -p app-desktop`（独立 Windows job） | II |
+| `flutter analyze` + `flutter test`（独立 mobile job） | III |
 | `cargo audit`（依赖漏洞） | VIII |
 | 机密扫描（私钥块、云密钥、平台令牌、误提交的 `.env`） | VIII |
 | TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
@@ -122,9 +140,9 @@ cargo machete
 1. Settings → Branches → Add branch protection rule，目标分支 `main`；
 2. 勾选 **Require a pull request before merging**。单开发者仓库可把批准数设为 0，
    由 Governance 里的单开发者条款以自我证明兜底；
-3. 勾选 **Require status checks to pass**，并选中全部七个：
+3. 勾选 **Require status checks to pass**，并选中全部八个：
    `cargo fmt --check`、`cargo clippy -D warnings`、`cargo test`、`desktop (windows)`、
-   `Constitution governance scan`、`cargo audit`、`Secret scan`；
+   `mobile (flutter)`、`Constitution governance scan`、`cargo audit`、`Secret scan`；
 4. 勾选 **Do not allow bypassing the above settings**，否则管理员仍能直接推送。
 
 开启之前，直接 `git push origin main` 是会成功的——本模板自身的提交历史就是例子。
