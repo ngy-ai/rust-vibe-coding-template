@@ -12,14 +12,17 @@
 ## 快速开始
 
 ```bash
-cargo run
+cargo run                 # CLI（默认成员），默认 --input hello
+cargo run -p app-desktop  # 桌面端，gpui-kit 窗口
 ```
 
 ## 目录结构
 
 | 路径 | 作用 |
 | --- | --- |
-| `src/` | 源码；模块按职责命名，测试镜像源码布局 |
+| `crates/core/` | 三端共享的业务逻辑与错误类型；不依赖 GUI、HTTP 与平台 API |
+| `crates/cli/` | 命令行客户端（clap）：负责参数、stdout/stderr 分工与退出码 |
+| `crates/desktop/` | 桌面客户端（gpui-kit）：窗口只做展示与调用 `app-core` |
 | `.specify/memory/constitution.md` | 项目宪法，八条原则的唯一定义处 |
 | `AGENTS.md` | 给编码代理的速查入口（索引，不含细则） |
 | `.specify/templates/` | spec-kit 的 spec / plan / tasks / checklist 模板 |
@@ -28,11 +31,11 @@ cargo run
 | `.github/workflows/ci.yml` | CI：格式、lint + 依赖、测试、宪法治理扫描 |
 | `rust-toolchain.toml` | 固定工具链与组件 |
 | `rustfmt.toml` | `edition` / `style_edition` = 2024 |
-| `Cargo.toml` | 包信息与 MSRV（`rust-version`） |
+| `Cargo.toml` | workspace 清单：成员、`default-members`、共享依赖与 MSRV |
 
 ## 质量门禁
 
-与 `ci.yml` 的四个 job 一一对应：
+与 `ci.yml` 的 job 一一对应：
 
 | 检查 | 对应原则 |
 | --- | --- |
@@ -40,9 +43,13 @@ cargo run
 | `cargo clippy --all-targets --all-features -- -D warnings` | II |
 | `cargo machete`（未使用依赖） | II |
 | `cargo test --all-targets --all-features` | III |
+| `cargo clippy -p app-desktop`（独立 Windows job） | II |
 | `cargo audit`（依赖漏洞） | VIII |
 | 机密扫描（私钥块、云密钥、平台令牌、误提交的 `.env`） | VIII |
 | TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
+
+`cargo fmt` 覆盖全部成员；`clippy` / `test` 在根目录只作用于 `default-members`
+（`core` 与 `cli`），桌面端依赖图形栈，由单独的 Windows job 校验。
 
 本地一次跑完：
 
@@ -86,7 +93,8 @@ cargo machete
 
 ## 作为模板使用
 
-1. 改 `Cargo.toml` 的 `name`，crate 名会自动变成下划线形式
+1. 改 `crates/*/Cargo.toml` 的 `name` 与 `[workspace.dependencies]` 里的路径别名，
+   crate 名会自动变成下划线形式
 2. 更新 `.github/CODEOWNERS`，把所有者换成你自己或团队
 3. 第一次 `/speckit.plan` 时确认宪法 V 的默认预算是否沿用，未确认即视为沿用
 4. 按需调整 `ci.yml` 的工具链版本与 job
@@ -100,8 +108,8 @@ cargo machete
 1. Settings → Branches → Add branch protection rule，目标分支 `main`；
 2. 勾选 **Require a pull request before merging**。单开发者仓库可把批准数设为 0，
    由 Governance 里的单开发者条款以自我证明兜底；
-3. 勾选 **Require status checks to pass**，并选中全部六个：
-   `cargo fmt --check`、`cargo clippy -D warnings`、`cargo test`、
+3. 勾选 **Require status checks to pass**，并选中全部七个：
+   `cargo fmt --check`、`cargo clippy -D warnings`、`cargo test`、`desktop (windows)`、
    `Constitution governance scan`、`cargo audit`、`Secret scan`；
 4. 勾选 **Do not allow bypassing the above settings**，否则管理员仍能直接推送。
 
@@ -109,7 +117,7 @@ cargo machete
 
 ## 容易踩的约定
 
-- 测试镜像源码：`src/<module>/` 对应 `tests/<module>_test.rs`
+- 测试镜像源码：`crates/<crate>/src/<module>/` 对应 `crates/<crate>/tests/<module>_test.rs`
 - TODO 只能写成 `TODO(#<issue>): 说明`；裸 `TODO:`、`TODO(TBD)` 会被 CI 拦下
 - 死代码豁免只接受 `#[expect(dead_code, reason = "<理由>，见 #<issue>")]`，
   `#[allow(dead_code)]` 会被 CI 拦下

@@ -1,6 +1,9 @@
 [workspace]
 resolver = "3"
-members = ["crates/core", "crates/cli"]
+members = ["crates/core", "crates/cli", "crates/desktop"]
+# `cargo run` / `cargo test` 默认作用于核心库与 CLI：桌面端依赖图形栈，
+# 在 Linux CI runner 上需要额外系统库，因此由单独的 Windows job 校验。
+default-members = ["crates/core", "crates/cli"]
 
 [workspace.package]
 version = "0.1.0"
@@ -10,5 +13,8 @@ rust-version = "1.97"
 [workspace.dependencies]
 app-core = { path = "crates/core" }
 anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+gpui-kit = "0.8"
 ngy-utils-tracing = "0.7"
+thiserror = "2"
 tracing = "0.1"

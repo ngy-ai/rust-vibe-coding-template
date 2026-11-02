@@ -11,13 +11,16 @@
 use std::process::ExitCode;
 use std::time::Instant;
 
+use clap::Parser;
 use ngy_utils_tracing::{InitOptions, init};
 use tracing::{error, info};
 
+mod args;
 mod run;
 
 fn main() -> ExitCode {
     let started = Instant::now();
+    let args = args::Args::parse();
 
     // `InitResult` 持有文件日志的 WorkerGuard 和后台清理任务，必须存活到进程结束才不丢日志。
     let logging = match init(
@@ -41,7 +44,7 @@ fn main() -> ExitCode {
     );
 
     // 错误只在这一层记录一次：内部各层负责返回错误，不自行打点，避免重复日志。
-    let exit_code = match run::run() {
+    let exit_code = match run::run(args) {
         Ok(()) => {
             info!(
                 result = "ok",

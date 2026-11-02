@@ -1,0 +1,12 @@
+[package]
+name = "app-desktop"
+description = "桌面客户端：gpui-kit 窗口 + 共享核心"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+app-core.workspace = true
+gpui-kit.workspace = true
+ngy-utils-tracing.workspace = true
+tracing.workspace = true
