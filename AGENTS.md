@@ -8,7 +8,12 @@ Rust + spec-kit 的 vibe coding 模板。本文件是给编码代理的速查入
 
 | 路径 | 放什么 |
 | --- | --- |
-| `src/` | 源码，模块按职责命名；测试镜像到 `tests/<module>_test.rs` |
+| `crates/core/` | 三端共享的业务逻辑；不依赖 GUI、HTTP 与平台 API |
+| `crates/cli/` | 命令行客户端，负责参数、stdout/stderr 分工与退出码 |
+| `crates/server/` | 服务端（axum）；`POST /api/execute`，错误体与 CLI 文案同源 |
+| `crates/mobile/` | 移动端绑定层（flutter_rust_bridge）；只转调 `app-core`，不含业务规则 |
+| `crates/desktop/` | 桌面客户端（gpui-kit）；界面只展示与调用 `app-core` |
+| `apps/mobile/` | Flutter 工程；`lib/src/rust/` 是生成物，改接口后要重新 codegen |
 | `.specify/memory/constitution.md` | 八条原则与治理规则，唯一权威 |
 | `.specify/templates/` | spec / plan / tasks / checklist 模板 |
 | `.specify/scripts/` | spec-kit 辅助脚本（PowerShell / Python） |
@@ -20,9 +25,14 @@ Rust + spec-kit 的 vibe coding 模板。本文件是给编码代理的速查入
 ## 命令
 
 ```bash
-cargo run
+cargo run                           # CLI（default-members 之一）
+cargo run -p app-server             # 服务端，默认 127.0.0.1:8080
+cargo run -p app-desktop            # 桌面端，gpui-kit
 cargo fmt --check
+cd apps/mobile && flutter analyze && flutter test   # 手机端（需 Flutter SDK）
+cd apps/mobile && flutter_rust_bridge_codegen generate  # 改完 Rust 接口后重生成绑定
 cargo clippy --all-targets --all-features -- -D warnings
+cargo clippy -p app-desktop --all-targets -- -D warnings
 cargo test --all-targets --all-features
 cargo machete     # 未使用依赖，需 cargo install cargo-machete --locked
 cargo audit       # 依赖漏洞

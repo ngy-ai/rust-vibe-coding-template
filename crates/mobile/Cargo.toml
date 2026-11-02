@@ -1,0 +1,19 @@
+[package]
+name = "app_mobile"
+description = "移动端绑定层：把 app-core 暴露给 Flutter/Dart"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[lib]
+# cdylib/staticlib 供 Android 与 iOS 链接；rlib 让 `cargo test` 与 clippy 也能跑。
+crate-type = ["cdylib", "staticlib", "lib"]
+
+[dependencies]
+anyhow.workspace = true
+app-core.workspace = true
+# 版本必须与 apps/mobile/pubspec.yaml 的 flutter_rust_bridge 以及 codegen 版本完全一致。
+flutter_rust_bridge = "=2.13.0"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

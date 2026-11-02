@@ -56,6 +56,55 @@ jobs:
       - name: Run tests
         run: cargo test --all-targets --all-features
 
+  desktop:
+    name: desktop (windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show && rustup component add rustfmt clippy
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+      # 桌面端依赖图形栈，Linux runner 需要额外的系统库，因此在 Windows 上单独校验。
+      - name: Run clippy for the desktop client
+        run: cargo clippy -p app-desktop --all-targets -- -D warnings
+
+  mobile:
+    name: mobile (flutter)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show
+      - uses: subosito/flutter-action@v2
+        with:
+          # 与开发机保持一致：codegen 会用 dart format 处理生成物，版本漂移会造成假 diff。
+          flutter-version: 3.41.4
+          channel: stable
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Resolve Dart dependencies
+        run: flutter pub get
+      - name: Install flutter_rust_bridge_codegen
+        uses: taiki-e/install-action@v2
+        with:
+          tool: flutter_rust_bridge_codegen@2.13.0
+      # Rust 接口的类型检查由 lint job 的 cargo clippy 覆盖，这里只确认绑定没有漂移：
+      # 改完 Rust 接口忘了 codegen 时，这一步会红。
+      - name: Check generated bindings are up to date
+        run: |
+          flutter_rust_bridge_codegen generate
+          git -C ../.. diff --exit-code --stat -- \
+            apps/mobile/lib/src/rust \
+            crates/mobile/src/frb_generated.rs
+      - name: Analyze and test
+        run: |
+          flutter analyze
+          flutter test
+
   governance:
     name: Constitution governance scan
     runs-on: ubuntu-latest
@@ -93,7 +142,7 @@ jobs:
           limit=700
           warn=600
 
-          # 宪法 I：src/ 与 tests/ 下的手写 *.rs 单文件上限 700 行，600 行起预警；
+          # 宪法 I：各 crate 的 src/ 与 tests/ 下手写 *.rs 单文件上限 700 行，600 行起预警；
           # 文件头 5 行内标注 @generated 的生成产物不计入。
           while IFS= read -r file; do
             [ -n "$file" ] || continue
@@ -107,7 +156,9 @@ jobs:
             elif [ "$lines" -ge "$warn" ]; then
               echo "::warning file=$file::${lines} 行，已达宪法 I 的 ${warn} 行预警线，新增代码前先拆"
             fi
-          done < <(git ls-files -- 'src/*.rs' 'src/**/*.rs' 'tests/*.rs' 'tests/**/*.rs')
+          done < <(git ls-files -- \
+            'crates/*/src/*.rs' 'crates/*/src/**/*.rs' \
+            'crates/*/tests/*.rs' 'crates/*/tests/**/*.rs')
 
           exit $status
 

@@ -1,0 +1,21 @@
+[package]
+name = "app-server"
+description = "服务端：把共享核心暴露为 HTTP 接口"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+app-core.workspace = true
+axum.workspace = true
+clap.workspace = true
+ngy-utils-tracing.workspace = true
+serde.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+http-body-util.workspace = true
+serde_json.workspace = true
+tower = { workspace = true, features = ["util"] }
