@@ -33,7 +33,10 @@ curl -s localhost:8080/api/execute \
 ### 手机端（Flutter + flutter_rust_bridge）
 
 `apps/mobile` 是 Flutter 工程，`crates/mobile` 是 Rust 绑定层，两者由
-`apps/mobile/flutter_rust_bridge.yaml` 连接。Dart 绑定是生成物，改完 Rust 接口必须重新生成：
+`apps/mobile/flutter_rust_bridge.yaml` 连接。
+
+Dart 绑定是生成物，**改完 `crates/mobile` 的导出函数后必须重新生成，否则 Dart 侧会和 Rust 侧漂移**：
+生成代码仍引用旧函数名，`flutter analyze` 看不出来，要到运行时才报错。
 
 ```bash
 cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked   # 与两端版本严格一致
@@ -41,8 +44,8 @@ cd apps/mobile
 flutter_rust_bridge_codegen generate
 ```
 
-生成结果落在 `apps/mobile/lib/src/rust/`，不要手改。Android 构建由 cargokit 调 cargo，
-需要 Android SDK/NDK；iOS 只能在 macOS 上出包。
+生成结果落在 `apps/mobile/lib/src/rust/`，不要手改；它与 Rust 接口属于同一次变更，
+必须一起提交。Android 构建由 cargokit 调 cargo，需要 Android SDK/NDK；iOS 只能在 macOS 上出包。
 
 ## 目录结构
 
@@ -75,7 +78,7 @@ flutter_rust_bridge_codegen generate
 | `cargo machete`（未使用依赖） | II |
 | `cargo test --all-targets --all-features` | III |
 | `cargo clippy -p app-desktop`（独立 Windows job） | II |
-| `flutter analyze` + `flutter test`（独立 mobile job） | III |
+| `flutter analyze` + `flutter test` + 绑定漂移检查（独立 mobile job） | III |
 | `cargo audit`（依赖漏洞） | VIII |
 | 机密扫描（私钥块、云密钥、平台令牌、误提交的 `.env`） | VIII |
 | TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
@@ -154,4 +157,7 @@ cargo machete
 - 死代码豁免只接受 `#[expect(dead_code, reason = "<理由>，见 #<issue>")]`，
   `#[allow(dead_code)]` 会被 CI 拦下
 - 未使用的依赖会让 `cargo machete` 失败，先删依赖再加代码，不要反过来
+- 改 `crates/mobile` 的导出函数后，要在 `apps/mobile` 跑一次
+  `flutter_rust_bridge_codegen generate`，并把 `lib/src/rust/` 的改动一起提交；
+  漏了这步 `flutter analyze` 不会报错，只有运行时才会发现 Dart 还在调旧符号
 - 基准工具（`criterion`、`hyperfine`）只在真正要测量时引入，且与第一个基准同时提交

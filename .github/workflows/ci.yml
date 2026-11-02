@@ -77,12 +77,29 @@ jobs:
         working-directory: apps/mobile
     steps:
       - uses: actions/checkout@v5
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show
       - uses: subosito/flutter-action@v2
         with:
+          # 与开发机保持一致：codegen 会用 dart format 处理生成物，版本漂移会造成假 diff。
+          flutter-version: 3.41.4
           channel: stable
-      # Rust 侧由 lint job 的 cargo clippy 覆盖，这里只校验 Dart 侧与生成物是否可用。
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
       - name: Resolve Dart dependencies
         run: flutter pub get
+      - name: Install flutter_rust_bridge_codegen
+        uses: taiki-e/install-action@v2
+        with:
+          tool: flutter_rust_bridge_codegen@2.13.0
+      # Rust 接口的类型检查由 lint job 的 cargo clippy 覆盖，这里只确认绑定没有漂移：
+      # 改完 Rust 接口忘了 codegen 时，这一步会红。
+      - name: Check generated bindings are up to date
+        run: |
+          flutter_rust_bridge_codegen generate
+          git -C ../.. diff --exit-code --stat -- \
+            apps/mobile/lib/src/rust \
+            crates/mobile/src/frb_generated.rs
       - name: Analyze and test
         run: |
           flutter analyze
