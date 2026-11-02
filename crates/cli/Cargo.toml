@@ -1,0 +1,12 @@
+[package]
+name = "app-cli"
+description = "命令行客户端：共享核心的终端入口"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+app-core.workspace = true
+ngy-utils-tracing.workspace = true
+tracing.workspace = true

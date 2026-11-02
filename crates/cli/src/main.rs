@@ -1,4 +1,4 @@
-//! 应用入口：先初始化日志，再执行业务逻辑。
+//! CLI 入口：先初始化日志，再执行业务逻辑。
 //!
 //! 输出通道固定分工：stdout 只放业务数据，日志一律写 stderr（`production` 只写文件）。
 //! CLI 契约测试因此可以直接断言 stdout，不受日志干扰。
@@ -14,7 +14,6 @@ use std::time::Instant;
 use ngy_utils_tracing::{InitOptions, init};
 use tracing::{error, info};
 
-mod common;
 mod run;
 
 fn main() -> ExitCode {
@@ -22,7 +21,7 @@ fn main() -> ExitCode {
 
     // `InitResult` 持有文件日志的 WorkerGuard 和后台清理任务，必须存活到进程结束才不丢日志。
     let logging = match init(
-        InitOptions::new(common::ENV_PREFIX)
+        InitOptions::new(app_core::ENV_PREFIX)
             // 调试构建下的默认级别：项目自身 crate 用 debug，其余依赖回退到 info，可被 RUST_LOG 覆盖。
             // `CARGO_CRATE_NAME` 已经是 tracing 使用的 target 名（连字符转下划线）。
             .crates(vec![env!("CARGO_CRATE_NAME").to_string()]),

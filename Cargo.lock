@@ -18,6 +18,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
+name = "app-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "app-core",
+ "ngy-utils-tracing",
+ "tracing",
+]
+
+[[package]]
+name = "app-core"
+version = "0.1.0"
+
+[[package]]
 name = "cfg-if"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -180,15 +194,6 @@ name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
-
-[[package]]
-name = "rust-vibe-coding-template"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "ngy-utils-tracing",
- "tracing",
-]
 
 [[package]]
 name = "serde"

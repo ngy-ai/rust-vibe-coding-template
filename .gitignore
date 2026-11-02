@@ -3,5 +3,7 @@
 # 本地环境变量与运行时日志
 /.env
 /logs
+# 在 crate 目录里直接 `cargo run -p ...` 时日志落在包根，同样不入库
+/crates/*/logs/
 /TODO.md
 /github_token.txt
