@@ -10,6 +10,7 @@ Rust + spec-kit 的 vibe coding 模板。本文件是给编码代理的速查入
 | --- | --- |
 | `crates/core/` | 三端共享的业务逻辑；不依赖 GUI、HTTP 与平台 API |
 | `crates/cli/` | 命令行客户端，负责参数、stdout/stderr 分工与退出码 |
+| `crates/server/` | 服务端（axum）；`POST /api/execute`，错误体与 CLI 文案同源 |
 | `crates/desktop/` | 桌面客户端（gpui-kit）；界面只展示与调用 `app-core` |
 | `.specify/memory/constitution.md` | 八条原则与治理规则，唯一权威 |
 | `.specify/templates/` | spec / plan / tasks / checklist 模板 |
@@ -23,6 +24,7 @@ Rust + spec-kit 的 vibe coding 模板。本文件是给编码代理的速查入
 
 ```bash
 cargo run                           # CLI（default-members 之一）
+cargo run -p app-server             # 服务端，默认 127.0.0.1:8080
 cargo run -p app-desktop            # 桌面端，gpui-kit
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings

@@ -13,8 +13,21 @@
 
 ```bash
 cargo run                 # CLI（默认成员），默认 --input hello
+cargo run -p app-server   # 服务端，默认 127.0.0.1:8080
 cargo run -p app-desktop  # 桌面端，gpui-kit 窗口
 ```
+
+服务端只有一个端点，契约与 CLI 共用同一份文案：
+
+```bash
+curl -s localhost:8080/api/execute \
+  -H 'content-type: application/json' \
+  -d '{"input":"hello"}'
+# {"message":"已处理 5 个字符"}
+```
+
+错误体固定为 `{"error":{"kind":"...","message":"..."}}`：`kind` 给程序判断，
+`message` 与 CLI 的报错同源，空白输入与超长输入都返回 422。
 
 ## 目录结构
 
@@ -22,6 +35,7 @@ cargo run -p app-desktop  # 桌面端，gpui-kit 窗口
 | --- | --- |
 | `crates/core/` | 三端共享的业务逻辑与错误类型；不依赖 GUI、HTTP 与平台 API |
 | `crates/cli/` | 命令行客户端（clap）：负责参数、stdout/stderr 分工与退出码 |
+| `crates/server/` | 服务端（axum）：`POST /api/execute`，错误体与 CLI 文案同源 |
 | `crates/desktop/` | 桌面客户端（gpui-kit）：窗口只做展示与调用 `app-core` |
 | `.specify/memory/constitution.md` | 项目宪法，八条原则的唯一定义处 |
 | `AGENTS.md` | 给编码代理的速查入口（索引，不含细则） |
@@ -49,7 +63,7 @@ cargo run -p app-desktop  # 桌面端，gpui-kit 窗口
 | TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
 
 `cargo fmt` 覆盖全部成员；`clippy` / `test` 在根目录只作用于 `default-members`
-（`core` 与 `cli`），桌面端依赖图形栈，由单独的 Windows job 校验。
+（`core`、`cli`、`server`），桌面端依赖图形栈，由单独的 Windows job 校验。
 
 本地一次跑完：
 
