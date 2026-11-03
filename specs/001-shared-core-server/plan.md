@@ -1,6 +1,6 @@
 # Implementation Plan: 共享核心的 HTTP 服务端
 
-**Branch**: `refactor/workspace-split` | **Date**: 2026-11-02 | **Spec**: 无独立 spec，随三端拆分一并落地
+**Branch**: `refactor/workspace-split` | **Date**: 2026-11-02 | **Spec**: [spec.md](./spec.md)（事后补写）
 
 ## Summary
 
