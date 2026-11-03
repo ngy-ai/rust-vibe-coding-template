@@ -1,6 +1,6 @@
 # Implementation Plan: Flutter + flutter_rust_bridge 手机端
 
-**Branch**: `refactor/workspace-split` | **Date**: 2026-11-02 | **Spec**: 无独立 spec，随三端拆分落地
+**Branch**: `refactor/workspace-split` | **Date**: 2026-11-02 | **Spec**: [spec.md](./spec.md)（事后补写）
 
 ## Summary
 
@@ -73,5 +73,5 @@ Rust 代码不再单独维护第二份 `Cargo.lock`。
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| 第五个单元 `crates/mobile`（宪法 VI 的初始上限是三个，serve 已占第四个） | Flutter 需要 `cdylib`/`staticlib` 产物与 `#[frb]` 标注，这些都不该污染 `app-core`；绑定层必须能在 Android/iOS 目标上单独编译 | 直接给 `app-core` 加 `#[frb]` 标注与 crate-type：会让核心库依赖 FRB 宏与 codegen，桌面端、CLI、服务端被动继承一套跨语言工具链；且 `cargo test -p app-core` 会被 FFI 目标类型牵制 |
+| 独立绑定单元 `crates/mobile`（宪法 VI 1.18.0 起属模板基线，不再计入功能上限） | Flutter 需要 `cdylib`/`staticlib` 产物与 `#[frb]` 标注，这些都不该污染 `app-core`；绑定层必须能在 Android/iOS 目标上单独编译 | 直接给 `app-core` 加 `#[frb]` 标注与 crate-type：会让核心库依赖 FRB 宏与 codegen，桌面端、CLI、服务端被动继承一套跨语言工具链；且 `cargo test -p app-core` 会被 FFI 目标类型牵制 |
 | `apps/mobile` 不在 Cargo workspace 内 | Flutter 工程必须有自己的 `pubspec.yaml` 与平台目录，放进 `crates/` 会破坏「crates 只放 Rust crate」的约定 | 把 Dart 代码塞进 `crates/mobile`：`flutter` 工具链以 pubspec 为根，混放会导致 `flutter pub get` 与 `cargo` 互相扫描对方目录 |
