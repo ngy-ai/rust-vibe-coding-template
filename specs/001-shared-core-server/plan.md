@@ -61,4 +61,4 @@ crates/server/
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| 第四个单元 `crates/server`（宪法 VI 的初始实现上限是三个） | PC 端与移动端之外的调用方需要以 HTTP 复用同一套校验；服务端的进程边界（端口监听、并发连接、状态码）与 CLI 完全不同 | 并进 `app-cli`：会让 CLI 拉入 tokio/axum，拖累宪法 V 的 p95 < 100ms 启动预算，且 `cargo run` 行为随子命令漂移；并进 `app-core`：核心层必须保持零平台依赖，否则移动端 FFI 复用会被 HTTP 运行时污染 |
+| 独立可部署单元 `crates/server`（宪法 VI 1.18.0 起属模板基线，不再计入功能上限） | PC 端与移动端之外的调用方需要以 HTTP 复用同一套校验；服务端的进程边界（端口监听、并发连接、状态码）与 CLI 完全不同 | 并进 `app-cli`：会让 CLI 拉入 tokio/axum，拖累宪法 V 的 p95 < 100ms 启动预算，且 `cargo run` 行为随子命令漂移；并进 `app-core`：核心层必须保持零平台依赖，否则移动端 FFI 复用会被 HTTP 运行时污染 |
