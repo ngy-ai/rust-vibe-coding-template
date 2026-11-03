@@ -105,6 +105,37 @@ jobs:
           flutter analyze
           flutter test
 
+  android:
+    name: android (build apk)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.41.4
+          channel: stable
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'ndk;29.0.14206865'
+      - name: Point cargokit at the NDK
+        run: echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> "$GITHUB_ENV"
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Resolve Dart dependencies
+        run: flutter pub get
+        working-directory: apps/mobile
+      # cargokit 会自己补装 Rust 的 Android 目标，这里只需要 NDK 与 JDK 就位。
+      # 全 ABI 构建比只出 arm64 慢几分钟，但能同时覆盖 armv7 与 x86_64 的交叉编译。
+      - name: Build debug APK
+        run: flutter build apk --debug
+        working-directory: apps/mobile
+
   governance:
     name: Constitution governance scan
     runs-on: ubuntu-latest
