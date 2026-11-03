@@ -80,6 +80,7 @@ flutter_rust_bridge_codegen generate
 | `cargo clippy -p app-desktop`（独立 Windows job） | II |
 | `flutter analyze` + `flutter test` + 绑定漂移检查（独立 mobile job） | III |
 | `flutter build apk --debug`（独立 android job，含 NDK 交叉编译） | III |
+| `flutter build ios --no-codesign`（独立 ios job，macOS runner） | III |
 | `cargo audit`（依赖漏洞） | VIII |
 | 机密扫描（私钥块、云密钥、平台令牌、误提交的 `.env`） | VIII |
 | TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
@@ -144,10 +145,10 @@ cargo machete
 1. Settings → Branches → Add branch protection rule，目标分支 `main`；
 2. 勾选 **Require a pull request before merging**。单开发者仓库可把批准数设为 0，
    由 Governance 里的单开发者条款以自我证明兜底；
-3. 勾选 **Require status checks to pass**，并选中全部九个：
+3. 勾选 **Require status checks to pass**，并选中全部十个：
    `cargo fmt --check`、`cargo clippy -D warnings`、`cargo test`、`desktop (windows)`、
-   `mobile (flutter)`、`android (build apk)`、`Constitution governance scan`、
-   `cargo audit`、`Secret scan`；
+   `mobile (flutter)`、`android (build apk)`、`ios (build, no codesign)`、
+   `Constitution governance scan`、`cargo audit`、`Secret scan`；
 4. 勾选 **Do not allow bypassing the above settings**，否则管理员仍能直接推送。
 
 开启之前，直接 `git push origin main` 是会成功的——本模板自身的提交历史就是例子。
