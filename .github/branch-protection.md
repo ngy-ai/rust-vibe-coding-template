@@ -13,7 +13,7 @@
 | Require a pull request before merging | 开 | 宪法禁止直接提交到主分支 |
 | Required approvals | `0` | 单开发者仓库条款：平台不允许自己批准自己的 PR，审批由 PR 描述中的自我证明承担 |
 | Dismiss stale approvals | 开 | 新增提交即需重新确认（多维护者后才有实际意义） |
-| Require status checks to pass | 开 | 下方十一个检查全部勾选 |
+| Require status checks to pass | 开 | 下方十二个检查全部勾选 |
 | Require branches to be up to date | 开 | 避免「本地绿、合并后红」 |
 | Do not allow bypassing the above settings | 开 | 否则管理员仍可直接推送，等于没开 |
 | Allow force pushes / deletions | 关 | 历史只增不改 |
@@ -21,7 +21,7 @@
 出现第二个活跃维护者时，把 Required approvals 改为 `1`，并恢复宪法要求的独立审查；
 本文件的其余部分不变。
 
-## 必需检查（十一个）
+## 必需检查（十二个）
 
 名称必须与 `ci.yml` 里的 job `name:` 逐字一致，改 job 名就要同步改这里与平台设置。
 
@@ -30,7 +30,8 @@
 | `cargo fmt --check` | 格式 | II |
 | `cargo clippy -D warnings` | clippy + `cargo machete` | II |
 | `cargo test` | `cargo test --all-targets --all-features` | III |
-| `desktop (windows)` | 桌面端 clippy（图形栈，单独 Windows job） | II |
+| `perf (instructions)` | `execute` 三条路径的 valgrind 指令数不超过预算 10% | V |
+| `desktop (windows)` | 桌面端 clippy 与单元测试（图形栈，单独 Windows job） | II |
 | `mobile (flutter)` | codegen 漂移检查 + `flutter analyze` + `flutter test` | III |
 | `android (build apk)` | Android debug APK（NDK 交叉编译） | III |
 | `ios (build, no codesign)` | iOS debug 构建（不签名） | III |

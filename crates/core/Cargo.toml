@@ -13,7 +13,13 @@ tracing.workspace = true
 [dev-dependencies]
 # 只在真正要测量时引入（宪法 V）；与第一个基准一并提交。
 criterion = "0.8"
+# 指令数基准：给 CI 用的确定性门禁。
+iai-callgrind = "0.16"
 
 [[bench]]
 name = "execute"
+harness = false
+
+[[bench]]
+name = "execute_iai"
 harness = false
