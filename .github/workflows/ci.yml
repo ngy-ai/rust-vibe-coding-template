@@ -15,10 +15,13 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
 
+# Linux job 固定到具体镜像：`ubuntu-latest` 自 2026-10-19 起迁移到 Ubuntu 26，
+# 静默换代会让产物在代码未变时漂移。升级镜像时统一改这批 runs-on 并跑一轮 CI 验证。
+# macOS 与 Windows 未收到同类迁移公告，且 iOS 构建需要跟随最新 Xcode，暂保留 `-latest`。
 jobs:
   format:
     name: cargo fmt --check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - name: Install toolchain from rust-toolchain.toml
@@ -28,7 +31,7 @@ jobs:
 
   lint:
     name: cargo clippy -D warnings
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - name: Install toolchain from rust-toolchain.toml
@@ -46,7 +49,7 @@ jobs:
 
   test:
     name: cargo test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - name: Install toolchain from rust-toolchain.toml
@@ -71,7 +74,7 @@ jobs:
 
   mobile:
     name: mobile (flutter)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: apps/mobile
@@ -107,7 +110,7 @@ jobs:
 
   android:
     name: android (build apk)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - name: Install toolchain from rust-toolchain.toml
@@ -159,7 +162,7 @@ jobs:
 
   governance:
     name: Constitution governance scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - name: Scan TODO ownership and forbidden lint suppressions
@@ -216,7 +219,7 @@ jobs:
 
   audit:
     name: cargo audit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - name: Install toolchain from rust-toolchain.toml
@@ -230,7 +233,7 @@ jobs:
 
   secrets:
     name: Secret scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - name: Scan tracked files for credentials
