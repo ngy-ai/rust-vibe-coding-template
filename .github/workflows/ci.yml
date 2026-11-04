@@ -57,7 +57,25 @@ jobs:
       - name: Cache cargo registry and build artifacts
         uses: Swatinem/rust-cache@v2
       - name: Run tests
-        run: cargo test --all-targets --all-features
+        # 不加 --all-targets：它会把 iai 基准当测试跑，而基准必须由 runner 驱动。
+        # 基准的编译由 clippy job 的 --all-targets 覆盖，运行由 perf job 覆盖。
+        run: cargo test --all-features
+
+  perf:
+    name: perf (instructions)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+      - name: Install iai-callgrind runner
+        run: cargo install iai-callgrind-runner --version 0.16.1 --locked
+      # 指令数与机器负载无关，同一份代码永远同一个数，所以能拿绝对预算当门禁；
+      # 墙钟时间在共享 runner 上抖动太大，按时间设线只会逼人忽略红色。
+      - name: Check instruction budgets
+        run: python scripts/check_instructions.py
 
   desktop:
     name: desktop (windows)

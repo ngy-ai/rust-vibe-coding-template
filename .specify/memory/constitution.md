@@ -270,7 +270,9 @@ stdout 才成为可以被逐字节断言的契约，数据与诊断的消费者�
 1. 格式与 lint：`cargo fmt --check`、`cargo clippy --all-targets --all-features -- -D warnings`
    （clippy 已覆盖类型检查，不另设 `cargo check` 步骤）
 2. 未使用依赖：`cargo machete`（与 lint 同一 job 执行）
-3. 测试：`cargo test --all-targets --all-features`
+3. 测试：`cargo test --all-features`（不带 `--all-targets`：那会把 iai 基准当作测试运行，
+   而基准必须由 valgrind 的 runner 驱动；基准的编译由 `clippy --all-targets` 覆盖，运行由 CI 的
+   `perf (instructions)` job 覆盖）
 4. 宪法治理扫描：文件行数上限与预警线（原则 I）、TODO 归属与 `#[allow(dead_code)]` 拦截
    （原则 II 的两条硬规则）
 5. 机密扫描
@@ -325,4 +327,4 @@ stdout 才成为可以被逐字节断言的契约，数据与诊断的消费者�
 本条款只移除「第二审批人必须是另一个人类」这一结构性要求，不豁免专门审查本身、
 安全控制的实施、机密扫描或依赖禁令。
 
-**Version**: 1.18.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-11-03
+**Version**: 1.19.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-11-04

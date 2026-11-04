@@ -1,0 +1,5 @@
+{
+  "execute_max": 80000,
+  "execute_short": 8000,
+  "execute_too_long": 6000
+}
