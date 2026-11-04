@@ -8,3 +8,11 @@ rust-version.workspace = true
 [dependencies]
 thiserror.workspace = true
 tracing.workspace = true
+
+[dev-dependencies]
+# 只在真正要测量时引入（宪法 V）；与第一个基准一并提交。
+criterion = "0.8"
+
+[[bench]]
+name = "execute"
+harness = false

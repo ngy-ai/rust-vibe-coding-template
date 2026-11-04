@@ -111,6 +111,28 @@ codegen 漂移检查失败，所以这一对由人工一起改并重新生成绑
 安全告警需要在仓库 Settings → Code security 里开启 Dependabot alerts 与 security updates；
 与分支保护一样属于平台开关，仓库里的文件管不到。
 
+## 性能测量
+
+宪法 V 要求涉及性能的变更附前后测量。模板自带一个可复现的微基准：
+
+```bash
+cargo bench -p app-core     # criterion：短输入、4096 字符上限、超长拒绝三条路径
+```
+
+预算沿用宪法 V 的库默认值：`execute` 单次调用 p95 < 1 ms。比较两次测量时看置信区间是否重叠，
+重叠即视为无差异，不去比平均值的小数点。
+
+端到端（进程启动到退出）用 hyperfine，需自行安装：
+
+```bash
+cargo build --release
+hyperfine --warmup 5 --runs 20 --export-json target/bench-cli.json \
+  './target/release/app-cli --input hello'
+```
+
+按宪法 V：5 次预热、20 次采样，用 `--export-json` 的结果算 p95 与中位数；基准自身的变化
+（输入、环境、工具版本）与代码变更分开提交。
+
 ## 项目规范
 
 宪法八条原则：
