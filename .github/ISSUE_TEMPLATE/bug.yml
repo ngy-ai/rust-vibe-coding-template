@@ -1,0 +1,75 @@
+name: Bug 报告
+description: 命令、端点或某个平台的行为与文档、预期不符
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        先确认这不是**规格本身的意图**：CLI、HTTP 与手机端的文案都来自 `app-core`，
+        三端不一致通常是对齐问题，而不是各自的 bug。
+
+        涉及凭据泄漏或可利用的漏洞请不要开 issue，先私下联系所有者（见 `CODEOWNERS`）。
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 发生了什么
+      description: 期望的结果与实际的结果各是什么？
+      placeholder: |
+        期望：输入空白时返回 422 与 empty_input
+        实际：返回 200 与「已处理 0 个字符」
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 写出能直接粘贴执行的命令或操作序列，包含输入内容。
+      placeholder: |
+        1. cargo run -p app-server
+        2. curl -s localhost:8080/api/execute -H 'content-type: application/json' -d '{"input":"   "}'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: channel
+    attributes:
+      label: 出问题的端
+      options:
+        - CLI
+        - 服务端（HTTP）
+        - 手机端（Flutter）
+        - 桌面端（gpui-kit）
+        - CI 与工具链
+        - 文档与治理
+    validations:
+      required: true
+
+  - type: input
+    id: revision
+    attributes:
+      label: 版本或提交
+      description: 输出 `git rev-parse --short HEAD`，必要时附 `rustc --version`。
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关日志
+      description: 贴关键字段即可；不要贴令牌、密钥或个人信息。
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 提交前自查
+      options:
+        - label: 已搜索过现有 issue，没有重复
+          required: true
+        - label: 已从日志与配置中移除令牌、密钥与个人信息
+          required: true

@@ -19,7 +19,8 @@ Rust + spec-kit 的 vibe coding 模板。本文件是给编码代理的速查入
 | `.specify/scripts/` | spec-kit 辅助脚本（PowerShell / Python） |
 | `.codebuddy/commands/` | `/speckit.*` 命令定义 |
 | `specs/` | 每个 feature 的 spec、plan、tasks（由 `/speckit.specify` 创建） |
-| `.github/workflows/ci.yml` | 六个 CI 门禁 |
+| `.github/workflows/ci.yml` | 六类门禁、十个 job；Linux job 固定 `ubuntu-24.04` |
+| `.github/branch-protection.md` | 分支保护设置与十个必需检查的记录、核对命令 |
 | `.github/CODEOWNERS` | 核心模块与所有者 |
 
 ## 命令
