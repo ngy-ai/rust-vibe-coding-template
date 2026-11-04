@@ -97,6 +97,17 @@ cargo test --all-targets --all-features
 cargo machete
 ```
 
+## 依赖更新
+
+`.github/dependabot.yml` 每周一给 cargo、pub 与 GitHub Actions 各开 PR：patch 与 minor 各自成组，
+major 不分组、单独开，便于逐个读迁移说明。它只开 PR、不自动合并，仍然要过十个必需检查。
+
+唯一例外是 `flutter_rust_bridge`：Rust 侧钉成 `=2.13.0`，Dart 侧必须同版本，单边升级会让
+codegen 漂移检查失败，所以这一对由人工一起改并重新生成绑定。
+
+安全告警需要在仓库 Settings → Code security 里开启 Dependabot alerts 与 security updates；
+与分支保护一样属于平台开关，仓库里的文件管不到。
+
 ## 项目规范
 
 宪法八条原则：
