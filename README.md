@@ -62,10 +62,13 @@ flutter_rust_bridge_codegen generate
 | `.specify/templates/` | spec-kit 的 spec / plan / tasks / checklist 模板 |
 | `.specify/scripts/` | spec-kit 的 PowerShell 与 Python 辅助脚本 |
 | `.codebuddy/commands/` | `/speckit.*` 命令定义 |
-| `.github/workflows/ci.yml` | CI：六类门禁、十个 job；Linux job 固定到 `ubuntu-24.04` |
+| `.github/workflows/ci.yml` | CI：七类门禁、十二个 job；Linux job 固定到 `ubuntu-24.04` |
 | `.github/pull_request_template.md` | PR 模板：宪法自查、影响范围、例外与自我证明 |
 | `.github/ISSUE_TEMPLATE/` | bug 与功能请求两个表单；空白 issue 已关闭 |
-| `.github/branch-protection.md` | 分支保护与十个必需检查的记录、核对命令 |
+| `.github/SECURITY.md` | 漏洞报告渠道与处理约定（私密报告，不走公开 issue） |
+| `.github/branch-protection.md` | 分支保护与十二个必需检查的记录、核对命令 |
+| `.github/dependabot.yml` | 三个生态的每周依赖更新分组策略 |
+| `deny.toml` | 许可证白名单、禁用依赖与依赖来源规则 |
 | `scripts/init.py` | 把模板改造成自有项目：crate 名、bundle id 与环境变量前缀一次改完 |
 | `rust-toolchain.toml` | 固定工具链与组件 |
 | `rustfmt.toml` | `edition` / `style_edition` = 2024 |
@@ -86,11 +89,13 @@ flutter_rust_bridge_codegen generate
 | `flutter build apk --debug`（独立 android job，含 NDK 交叉编译） | III |
 | `flutter build ios --no-codesign`（独立 ios job，macOS runner） | III |
 | `cargo audit`（依赖漏洞） | VIII |
+| `cargo deny check`（许可证白名单、禁用依赖、依赖来源、撤回版本） | VIII |
+| 依赖审查（PR 新增依赖的高危漏洞，仅 PR 事件） | VIII |
 | 机密扫描（私钥块、云密钥、平台令牌、误提交的 `.env`） | VIII |
 | TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
 
 `cargo fmt` 覆盖全部成员；`clippy` / `test` 在根目录只作用于 `default-members`
-（`core`、`cli`、`server`），桌面端依赖图形栈，由单独的 Windows job 校验。
+（`core`、`cli`、`server`、`mobile`），桌面端依赖图形栈，由单独的 Windows job 校验。
 
 本地一次跑完：
 
@@ -99,12 +104,13 @@ cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-targets --all-features
 cargo machete
+cargo deny check
 ```
 
 ## 依赖更新
 
 `.github/dependabot.yml` 每周一给 cargo、pub 与 GitHub Actions 各开 PR：patch 与 minor 各自成组，
-major 不分组、单独开，便于逐个读迁移说明。它只开 PR、不自动合并，仍然要过十个必需检查。
+major 不分组、单独开，便于逐个读迁移说明。它只开 PR、不自动合并，仍然要过十二个必需检查。
 
 唯一例外是 `flutter_rust_bridge`：Rust 侧钉成 `=2.13.0`，Dart 侧必须同版本，单边升级会让
 codegen 漂移检查失败，所以这一对由人工一起改并重新生成绑定。
@@ -179,7 +185,7 @@ hyperfine --warmup 5 --runs 20 --export-json target/bench-cli.json \
 
 ### 分支保护（只能在 GitHub 上手动开启）
 
-平台开关无法进版本控制，所以「应该开哪些、勾哪十个检查」记在
+平台开关无法进版本控制，所以「应该开哪些、勾哪十二个检查」记在
 [`.github/branch-protection.md`](.github/branch-protection.md)，其中还包括一条 `gh api` 核对命令：
 配置完跑一次，输出与文档不一致就说明有漂移。本文件不再复述具体条目。
 

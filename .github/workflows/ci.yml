@@ -234,6 +234,30 @@ jobs:
       - name: Check known vulnerabilities
         run: cargo audit
 
+  deny:
+    name: cargo deny check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+      # 许可证、禁用依赖与依赖来源三道检查。漏洞项与 cargo audit 有重叠，属有意保留：
+      # audit 只看漏洞，deny 还看许可证与来源。
+      - name: Check licenses, bans and sources
+        run: cargo deny check
+
+  dependency-review:
+    name: Dependency review
+    # 依赖图只在 PR 上可比对：push 到 main 时没有 base 可对照。
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      # 只看本 PR 引入的依赖变更：新增高危依赖在这一步就被拦下，不必等整轮构建。
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
   secrets:
     name: Secret scan
     runs-on: ubuntu-24.04

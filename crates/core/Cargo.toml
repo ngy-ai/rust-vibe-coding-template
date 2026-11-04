@@ -4,6 +4,7 @@ description = "三端共享的业务逻辑：不依赖 GUI、HTTP 与平台 API"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+publish.workspace = true
 
 [dependencies]
 thiserror.workspace = true
