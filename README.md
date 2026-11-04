@@ -62,11 +62,11 @@ flutter_rust_bridge_codegen generate
 | `.specify/templates/` | spec-kit 的 spec / plan / tasks / checklist 模板 |
 | `.specify/scripts/` | spec-kit 的 PowerShell 与 Python 辅助脚本 |
 | `.codebuddy/commands/` | `/speckit.*` 命令定义 |
-| `.github/workflows/ci.yml` | CI：七类门禁、十一个 job；Linux job 固定到 `ubuntu-24.04` |
+| `.github/workflows/ci.yml` | CI：七类门禁、十二个 job；Linux job 固定到 `ubuntu-24.04` |
 | `.github/pull_request_template.md` | PR 模板：宪法自查、影响范围、例外与自我证明 |
 | `.github/ISSUE_TEMPLATE/` | bug 与功能请求两个表单；空白 issue 已关闭 |
 | `.github/SECURITY.md` | 漏洞报告渠道与处理约定（私密报告，不走公开 issue） |
-| `.github/branch-protection.md` | 分支保护与十一个必需检查的记录、核对命令 |
+| `.github/branch-protection.md` | 分支保护与十二个必需检查的记录、核对命令 |
 | `.github/dependabot.yml` | 三个生态的每周依赖更新分组策略 |
 | `deny.toml` | 许可证白名单、禁用依赖与依赖来源规则 |
 | `scripts/init.py` | 把模板改造成自有项目：crate 名、bundle id 与环境变量前缀一次改完 |
@@ -83,12 +83,13 @@ flutter_rust_bridge_codegen generate
 | `cargo fmt --check` | II |
 | `cargo clippy --all-targets --all-features -- -D warnings` | II |
 | `cargo machete`（未使用依赖） | II |
-| `cargo test --all-targets --all-features` | III |
+| `cargo test --all-features`（bench 目标交给 perf job） | III |
 | `cargo clippy -p app-desktop`（独立 Windows job） | II |
 | `flutter analyze` + `flutter test` + 绑定漂移检查（独立 mobile job） | III |
 | `flutter build apk --debug`（独立 android job，含 NDK 交叉编译） | III |
 | `flutter build ios --no-codesign`（独立 ios job，macOS runner） | III |
 | `cargo audit`（依赖漏洞） | VIII |
+| 指令数预算（`execute` 三条路径的 valgrind 指令数，超预算 10% 失败） | V |
 | `cargo deny check`（许可证白名单、禁用依赖、依赖来源、撤回版本） | VIII |
 | 机密扫描（私钥块、云密钥、平台令牌、误提交的 `.env`） | VIII |
 | TODO 归属扫描 + `#[allow(dead_code)]` 拦截 | II |
@@ -101,7 +102,7 @@ flutter_rust_bridge_codegen generate
 ```bash
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
-cargo test --all-targets --all-features
+cargo test --all-features        # 不加 --all-targets：会误跑需要 runner 的 iai 基准
 cargo machete
 cargo deny check
 ```
@@ -109,7 +110,7 @@ cargo deny check
 ## 依赖更新
 
 `.github/dependabot.yml` 每周一给 cargo、pub 与 GitHub Actions 各开 PR：patch 与 minor 各自成组，
-major 不分组、单独开，便于逐个读迁移说明。它只开 PR、不自动合并，仍然要过十一个必需检查。
+major 不分组、单独开，便于逐个读迁移说明。它只开 PR、不自动合并，仍然要过十二个必需检查。
 
 唯一例外是 `flutter_rust_bridge`：Rust 侧钉成 `=2.13.0`，Dart 侧必须同版本，单边升级会让
 codegen 漂移检查失败，所以这一对由人工一起改并重新生成绑定。
@@ -138,6 +139,20 @@ hyperfine --warmup 5 --runs 20 --export-json target/bench-cli.json \
 
 按宪法 V：5 次预热、20 次采样，用 `--export-json` 的结果算 p95 与中位数；基准自身的变化
 （输入、环境、工具版本）与代码变更分开提交。
+
+### 回归门禁
+
+CI 上另有一个确定性门禁，用 valgrind 统计的**指令数**而不是墙钟时间：
+
+```bash
+cargo install iai-callgrind-runner --version 0.16.1 --locked   # 需要与 iai-callgrind 同版本
+cargo bench -p app-core --bench execute_iai
+python scripts/check_instructions.py
+```
+
+预算写在 `crates/core/benches/instructions.json`，超出预算 10%（宪法 V 的回归线）即失败。
+共享 runner 的耗时能差出一倍，指令数与机器无关，所以这条线不会因为抖动误报。
+预算需要更新时用 `python scripts/check_instructions.py --update`，并在 PR 里说明为什么可以放宽。
 
 ## 项目规范
 
@@ -184,7 +199,7 @@ hyperfine --warmup 5 --runs 20 --export-json target/bench-cli.json \
 
 ### 分支保护（只能在 GitHub 上手动开启）
 
-平台开关无法进版本控制，所以「应该开哪些、勾哪十一个检查」记在
+平台开关无法进版本控制，所以「应该开哪些、勾哪十二个检查」记在
 [`.github/branch-protection.md`](.github/branch-protection.md)，其中还包括一条 `gh api` 核对命令：
 配置完跑一次，输出与文档不一致就说明有漂移。本文件不再复述具体条目。
 
