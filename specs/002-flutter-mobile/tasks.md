@@ -67,7 +67,7 @@
 
 ## Phase 6: Polish
 
-- [x] T017 固定 Flutter 版本（3.41.4）与代码生成器版本（2.13.0），避免工具漂移造成假 diff
+- [x] T017 固定 Flutter 版本与代码生成器版本（2.13.0），避免工具漂移造成假 diff；当前版本见 CI 与 `pubspec.yaml`
 - [x] T018 在 `AGENTS.md` 与 `README.md` 补手机端命令（`flutter analyze`、`flutter test`、codegen）
 
 ## Dependencies
