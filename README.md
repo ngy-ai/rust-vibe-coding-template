@@ -154,6 +154,22 @@ python scripts/check_instructions.py
 共享 runner 的耗时能差出一倍，指令数与机器无关，所以这条线不会因为抖动误报。
 预算需要更新时用 `python scripts/check_instructions.py --update`，并在 PR 里说明为什么可以放宽。
 
+## 发布
+
+配置在 `dist-workspace.toml`（cargo-dist 0.34），`.github/workflows/release.yml` 是它的生成物，
+**不要手改**——改了配置就跑一次 `dist generate` 并提交生成结果。
+
+```bash
+dist plan                                  # 本地校验：列出会产出的归档与目标三元组
+git tag v0.1.0 && git push origin v0.1.0   # 打 tag 触发发布
+```
+
+可分发目标只有两个二进制：`app-cli` 与 `app-server`。移动端是库（`cdylib`），桌面端依赖 gpui 的
+平台服务，都不进发布流水线。
+
+产物是五个目标三元组的归档 + source tarball + sha256（Windows 用 zip，其余 tar.xz），
+发布到 GitHub Releases。版本号取自 workspace 的 `version`，tag 必须形如 `vX.Y.Z`。
+
 ## 项目规范
 
 宪法八条原则：

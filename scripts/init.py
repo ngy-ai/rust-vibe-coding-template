@@ -249,6 +249,7 @@ def main() -> int:
     print("  3. 在 GitHub 上配置分支保护（见 .github/branch-protection.md）")
     print("  4. 跑 cargo test、flutter pub get && flutter analyze、flutter_rust_bridge_codegen generate")
     print("  5. iOS 真机发布前，在 Xcode 里设置签名团队")
+    print("  6. 把 crates/cli 与 crates/server 的 repository 字段改成你的仓库（cargo-dist 用它拼下载链接）")
     return 0 if ok else 1
 
 

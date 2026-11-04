@@ -21,6 +21,8 @@ Rust + spec-kit 的 vibe coding 模板。本文件是给编码代理的速查入
 | `specs/` | 每个 feature 的 spec、plan、tasks（由 `/speckit.specify` 创建） |
 | `crates/core/benches/` | criterion 基准；`cargo bench -p app-core` |
 | `scripts/init.py` | 复制模板后的一次性改名脚本（crate 名、bundle id、环境变量前缀） |
+| `dist-workspace.toml` | cargo-dist 配置：可分发二进制与目标平台 |
+| `.github/workflows/release.yml` | cargo-dist 生成的发布工作流（tag 触发，勿手改） |
 | `.github/workflows/ci.yml` | 七类门禁、十二个 job；Linux job 固定 `ubuntu-24.04` |
 | `.github/branch-protection.md` | 分支保护设置与十二个必需检查的记录、核对命令 |
 | `.github/pull_request_template.md` | PR 模板：宪法自查、影响范围、例外与自我证明 |
@@ -43,7 +45,8 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo clippy -p app-desktop --all-targets -- -D warnings
 cargo test --all-features   # 不带 --all-targets：iai 基准需要 runner，会被当测试跑失败
 cargo machete     # 未使用依赖，需 cargo install cargo-machete --locked
-cargo audit       # 依赖漏洞
+cargo audit
+dist plan                                  # 校验发布配置会产出什么（不会真的发）       # 依赖漏洞
 cargo deny check  # 许可证、禁用依赖与依赖来源，需 cargo install cargo-deny --locked
 cargo bench -p app-core  # 基准（criterion），复现命令与预算见 README「性能测量」
 ```
