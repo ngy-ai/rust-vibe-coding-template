@@ -66,6 +66,7 @@ flutter_rust_bridge_codegen generate
 | `.github/pull_request_template.md` | PR 模板：宪法自查、影响范围、例外与自我证明 |
 | `.github/ISSUE_TEMPLATE/` | bug 与功能请求两个表单；空白 issue 已关闭 |
 | `.github/branch-protection.md` | 分支保护与十个必需检查的记录、核对命令 |
+| `scripts/init.py` | 把模板改造成自有项目：crate 名、bundle id 与环境变量前缀一次改完 |
 | `rust-toolchain.toml` | 固定工具链与组件 |
 | `rustfmt.toml` | `edition` / `style_edition` = 2024 |
 | `Cargo.toml` | workspace 清单：成员、`default-members`、共享依赖与 MSRV |
@@ -166,8 +167,10 @@ hyperfine --warmup 5 --runs 20 --export-json target/bench-cli.json \
 
 ## 作为模板使用
 
-1. 改 `crates/*/Cargo.toml` 的 `name` 与 `[workspace.dependencies]` 里的路径别名，
-   crate 名会自动变成下划线形式
+1. 跑 `python scripts/init.py --name <你的项目名>`：默认只打印计划，确认后加 `--apply`。
+   它一次改完 crate 名、`app_core` 这类标识符、Flutter 包名与打包插件名、Android/iOS 的
+   bundle id、`NGY_` 环境变量前缀，并重命名相关文件与目录；可用 `--env-prefix` 与
+   `--bundle-id` 覆盖默认推导值。改名后按脚本输出的清单收尾
 2. 更新 `.github/CODEOWNERS`，把所有者换成你自己或团队
 3. 第一次 `/speckit.plan` 时确认宪法 V 的默认预算是否沿用，未确认即视为沿用
 4. 按需调整 `ci.yml` 的工具链版本与 job
