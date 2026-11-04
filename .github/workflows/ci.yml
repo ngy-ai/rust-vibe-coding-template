@@ -71,6 +71,9 @@ jobs:
       # 桌面端依赖图形栈，Linux runner 需要额外的系统库，因此在 Windows 上单独校验。
       - name: Run clippy for the desktop client
         run: cargo clippy -p app-desktop --all-targets -- -D warnings
+      # 桌面端不在 default-members 里，根目录的 cargo test 覆盖不到它。
+      - name: Test the desktop client
+        run: cargo test -p app-desktop
 
   mobile:
     name: mobile (flutter)
