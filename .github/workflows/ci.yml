@@ -88,7 +88,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           # 与开发机保持一致：codegen 会用 dart format 处理生成物，版本漂移会造成假 diff。
-          flutter-version: 3.41.4
+          flutter-version: 3.47.9
           channel: stable
       - name: Cache cargo registry and build artifacts
         uses: Swatinem/rust-cache@v2
@@ -120,7 +120,7 @@ jobs:
         run: rustup show
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.41.4
+          flutter-version: 3.47.9
           channel: stable
       - uses: actions/setup-java@v6
         with:
@@ -151,7 +151,7 @@ jobs:
         run: rustup show
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.41.4
+          flutter-version: 3.47.9
           channel: stable
       - name: Cache cargo registry and build artifacts
         uses: Swatinem/rust-cache@v2

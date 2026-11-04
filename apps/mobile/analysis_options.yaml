@@ -14,6 +14,9 @@ analyzer:
   # 从 app 根目录分析会把它的依赖误判成未解析，排除掉更接近真实构建行为。
   exclude:
     - rust_builder/cargokit/**
+    - build/**
+    - android/**
+    - ios/**
 
 linter:
   # The lint rules applied to this project can be customized in the
