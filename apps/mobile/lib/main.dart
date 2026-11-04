@@ -10,6 +10,15 @@ Future<void> main() async {
   runApp(const AppMobile());
 }
 
+/// 页面调用共享核心的方式：输入一段文本，返回一行结果或抛出 [AnyhowException]。
+///
+/// 抽成函数类型是为了可测：widget 测试环境里没有原生库，直接调 FFI 会炸；
+/// 注入一个假的执行器，就能把「成功显示 message、失败显示核心文案」这条界面逻辑测住。
+typedef Executor = String Function(String input);
+
+/// 生产路径：调用 Rust 侧的同步导出函数。
+String runSharedCore(String input) => execute(input: input);
+
 class AppMobile extends StatelessWidget {
   const AppMobile({super.key});
 
@@ -32,7 +41,10 @@ class AppMobile extends StatelessWidget {
 }
 
 class ExecutePage extends StatefulWidget {
-  const ExecutePage({super.key});
+  const ExecutePage({super.key, this.executor = runSharedCore});
+
+  /// 默认走共享核心；测试注入假实现即可覆盖成功与失败两条路径。
+  final Executor executor;
 
   @override
   State<ExecutePage> createState() => _ExecutePageState();
@@ -53,7 +65,7 @@ class _ExecutePageState extends State<ExecutePage> {
     // execute 是同步函数：校验与文案都在 app-core，Dart 侧只负责展示。
     setState(() {
       try {
-        _result = execute(input: _controller.text);
+        _result = widget.executor(_controller.text);
         _isError = false;
       } on AnyhowException catch (error) {
         _result = error.message;
