@@ -7,3 +7,7 @@
 /crates/*/logs/
 /TODO.md
 /github_token.txt
+
+# Python 脚本的字节码缓存
+__pycache__/
+*.pyc
