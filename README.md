@@ -62,7 +62,10 @@ flutter_rust_bridge_codegen generate
 | `.specify/templates/` | spec-kit 的 spec / plan / tasks / checklist 模板 |
 | `.specify/scripts/` | spec-kit 的 PowerShell 与 Python 辅助脚本 |
 | `.codebuddy/commands/` | `/speckit.*` 命令定义 |
-| `.github/workflows/ci.yml` | CI：格式、lint + 依赖、测试、宪法治理扫描 |
+| `.github/workflows/ci.yml` | CI：六类门禁、十个 job；Linux job 固定到 `ubuntu-24.04` |
+| `.github/pull_request_template.md` | PR 模板：宪法自查、影响范围、例外与自我证明 |
+| `.github/ISSUE_TEMPLATE/` | bug 与功能请求两个表单；空白 issue 已关闭 |
+| `.github/branch-protection.md` | 分支保护与十个必需检查的记录、核对命令 |
 | `scripts/init.py` | 把模板改造成自有项目：crate 名、bundle id 与环境变量前缀一次改完 |
 | `rust-toolchain.toml` | 固定工具链与组件 |
 | `rustfmt.toml` | `edition` / `style_edition` = 2024 |
@@ -98,6 +101,17 @@ cargo test --all-targets --all-features
 cargo machete
 ```
 
+## 依赖更新
+
+`.github/dependabot.yml` 每周一给 cargo、pub 与 GitHub Actions 各开 PR：patch 与 minor 各自成组，
+major 不分组、单独开，便于逐个读迁移说明。它只开 PR、不自动合并，仍然要过十个必需检查。
+
+唯一例外是 `flutter_rust_bridge`：Rust 侧钉成 `=2.13.0`，Dart 侧必须同版本，单边升级会让
+codegen 漂移检查失败，所以这一对由人工一起改并重新生成绑定。
+
+安全告警需要在仓库 Settings → Code security 里开启 Dependabot alerts 与 security updates；
+与分支保护一样属于平台开关，仓库里的文件管不到。
+
 ## 项目规范
 
 宪法八条原则：
@@ -109,7 +123,7 @@ cargo machete
 | III | 测试先行开发 | 先写测试并看到它失败，再用最少实现转绿 |
 | IV | 对外接触面一致性 | CLI / 库 API / 错误消息统一，错误必须可执行 |
 | V | 性能与效率 | 默认预算（p95 门禁 / p99 观察）、禁止二次复杂度与逐项 IO、变更须附测量、回归 >10% 需理由 |
-| VI | 简单性与 YAGNI | 默认单 crate、不预留配置与推测性抽象、三行重复优于过早抽象 |
+| VI | 简单性与 YAGNI | 基线由模板确立、功能新增最多三个单元、不预留配置与推测性抽象、三行重复优于过早抽象 |
 | VII | 可观测性与结构化日志 | 结构化字段、错误只记一次、stdout 放数据 / stderr 放日志、不记敏感信息 |
 | VIII | 安全基线 | 边界校验输入、禁止拼接注入、机密不入库、依赖扫漏洞 |
 
@@ -143,16 +157,9 @@ cargo machete
 
 ### 分支保护（只能在 GitHub 上手动开启）
 
-仓库里的任何文件都管不住这条，只有分支保护能让宪法「拉取请求」一节真正生效：
-
-1. Settings → Branches → Add branch protection rule，目标分支 `main`；
-2. 勾选 **Require a pull request before merging**。单开发者仓库可把批准数设为 0，
-   由 Governance 里的单开发者条款以自我证明兜底；
-3. 勾选 **Require status checks to pass**，并选中全部十个：
-   `cargo fmt --check`、`cargo clippy -D warnings`、`cargo test`、`desktop (windows)`、
-   `mobile (flutter)`、`android (build apk)`、`ios (build, no codesign)`、
-   `Constitution governance scan`、`cargo audit`、`Secret scan`；
-4. 勾选 **Do not allow bypassing the above settings**，否则管理员仍能直接推送。
+平台开关无法进版本控制，所以「应该开哪些、勾哪十个检查」记在
+[`.github/branch-protection.md`](.github/branch-protection.md)，其中还包括一条 `gh api` 核对命令：
+配置完跑一次，输出与文档不一致就说明有漂移。本文件不再复述具体条目。
 
 开启之前，直接 `git push origin main` 是会成功的——本模板自身的提交历史就是例子。
 

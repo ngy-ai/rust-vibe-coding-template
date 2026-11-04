@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 项目宪法（唯一权威）
+    url: https://github.com/ngy-ai/rust-vibe-coding-template/blob/main/.specify/memory/constitution.md
+    about: 八条原则与治理规则；与任何其他文档冲突时以此为准。
+  - name: spec-kit 工作流
+    url: https://github.com/ngy-ai/rust-vibe-coding-template/blob/main/README.md#spec-kit-工作流
+    about: 从 /speckit.specify 到 /speckit.implement 的顺序与产物。
