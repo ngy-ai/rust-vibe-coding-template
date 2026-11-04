@@ -27,10 +27,11 @@ from pathlib import Path
 BUDGET_FILE = Path("crates/core/benches/instructions.json")
 BENCH_ARGS = ["cargo", "bench", "-p", "app-core", "--bench", "execute_iai"]
 
-# iai-callgrind 的输出形如：
-#   execute_short
+# iai-callgrind 的输出形如（名称带模块前缀，且默认带 ANSI 颜色）：
+#   execute_iai::execute::execute_short short:short_input()
 #     Instructions:                1,234
-BENCH_NAME = re.compile(r"^(execute_[a-z_]+)\s*$")
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+BENCH_NAME = re.compile(r"^(?:[\w:]*::)?(execute_[a-z_]+)")
 INSTRUCTIONS = re.compile(r"Instructions:\s*([\d,]+)")
 
 
@@ -48,7 +49,7 @@ def run_benchmarks() -> dict[str, int]:
 
     measured: dict[str, int] = {}
     current: str | None = None
-    for line in output.splitlines():
+    for line in ANSI.sub("", output).splitlines():
         stripped = line.strip()
         if match := BENCH_NAME.match(stripped):
             current = match.group(1)

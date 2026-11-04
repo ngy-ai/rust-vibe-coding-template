@@ -23,3 +23,6 @@ harness = false
 [[bench]]
 name = "execute_iai"
 harness = false
+# iai-callgrind 的基准必须由 iai-callgrind-runner 驱动，直接当测试跑会失败；
+# 这也让 `cargo test --all-targets` 不会误把它拉进来。
+test = false
