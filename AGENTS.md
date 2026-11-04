@@ -21,8 +21,8 @@ Rust + spec-kit 的 vibe coding 模板。本文件是给编码代理的速查入
 | `specs/` | 每个 feature 的 spec、plan、tasks（由 `/speckit.specify` 创建） |
 | `crates/core/benches/` | criterion 基准；`cargo bench -p app-core` |
 | `scripts/init.py` | 复制模板后的一次性改名脚本（crate 名、bundle id、环境变量前缀） |
-| `.github/workflows/ci.yml` | 七类门禁、十二个 job；Linux job 固定 `ubuntu-24.04` |
-| `.github/branch-protection.md` | 分支保护设置与十二个必需检查的记录、核对命令 |
+| `.github/workflows/ci.yml` | 七类门禁、十一个 job；Linux job 固定 `ubuntu-24.04` |
+| `.github/branch-protection.md` | 分支保护设置与十一个必需检查的记录、核对命令 |
 | `.github/pull_request_template.md` | PR 模板：宪法自查、影响范围、例外与自我证明 |
 | `.github/ISSUE_TEMPLATE/` | bug 与功能请求表单；空白 issue 已关闭 |
 | `.github/SECURITY.md` | 漏洞报告走私密渠道，不开放公开 issue |
