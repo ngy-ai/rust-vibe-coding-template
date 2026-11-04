@@ -1,0 +1,47 @@
+# cargo-deny 配置：漏洞、许可证、禁用依赖与依赖来源。
+#
+# 与 `cargo audit` 在漏洞扫描上有重叠，保留两份是因为检查的维度不同：audit 只看漏洞，
+# deny 还看许可证与来源。新依赖进来时，许可证与来源在 CI 上先被拦一次，而不是等到发布前。
+#
+# 检查命令：cargo deny check
+
+[advisories]
+version = 2
+# yanked 版本一律拒绝：它表示发布者已撤回，继续用等于赌没人踩坑。
+yanked = "deny"
+# 只看工作区直接依赖是否被标记为不维护。传递依赖里大量历史遗留（gpui 图形栈带来的
+# instant / paste / rustybuzz 等）不归本仓库处置，全开会让人习惯性忽略这一类告警。
+unmaintained = "workspace"
+
+[licenses]
+version = 2
+# 模板面向通用项目，只放行常见的宽松与弱 copyleft 许可证。
+# 引入新依赖被拦下时，先确认许可证能否接受，再加进白名单并说明理由。
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "0BSD",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+    "CC0-1.0",
+    "Unlicense",
+    "MPL-2.0",
+]
+# 工作区成员在 `[workspace.package]` 里声明了 `publish = false`，不对外分发，
+# 因此不要求它们各自的许可证字段（发布某个 crate 时记得补）。
+private = { ignore = true }
+
+[bans]
+# 同一依赖出现多个主版本只告警：升级路径要逐个评估，直接失败会卡住无关变更。
+multiple-versions = "warn"
+# 工作区内部的 path 依赖天然没有版本号，不视为通配符依赖。
+allow-wildcard-paths = true
+
+[sources]
+# 只信任 crates.io；引入 git 依赖需要在这里显式登记。
+unknown-registry = "deny"
+unknown-git = "deny"

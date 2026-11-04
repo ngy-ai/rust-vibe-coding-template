@@ -15,6 +15,9 @@ default-members = ["crates/core", "crates/cli", "crates/server", "crates/mobile"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.97"
+# 模板里的 crate 是应用的一部分，不发布到 crates.io。
+# 需要发布某个 crate 时，在它自己的 Cargo.toml 里覆盖此项并补许可证字段。
+publish = false
 
 [workspace.dependencies]
 app-core = { path = "crates/core" }
