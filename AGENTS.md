@@ -41,7 +41,7 @@ cd apps/mobile && flutter analyze && flutter test   # 手机端（需 Flutter SD
 cd apps/mobile && flutter_rust_bridge_codegen generate  # 改完 Rust 接口后重生成绑定
 cargo clippy --all-targets --all-features -- -D warnings
 cargo clippy -p app-desktop --all-targets -- -D warnings
-cargo test --all-targets --all-features
+cargo test --all-features   # 不带 --all-targets：iai 基准需要 runner，会被当测试跑失败
 cargo machete     # 未使用依赖，需 cargo install cargo-machete --locked
 cargo audit       # 依赖漏洞
 cargo deny check  # 许可证、禁用依赖与依赖来源，需 cargo install cargo-deny --locked

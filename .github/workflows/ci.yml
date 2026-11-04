@@ -57,7 +57,9 @@ jobs:
       - name: Cache cargo registry and build artifacts
         uses: Swatinem/rust-cache@v2
       - name: Run tests
-        run: cargo test --all-targets --all-features
+        # 不加 --all-targets：它会把 iai 基准当测试跑，而基准必须由 runner 驱动。
+        # 基准的编译由 clippy job 的 --all-targets 覆盖，运行由 perf job 覆盖。
+        run: cargo test --all-features
 
   perf:
     name: perf (instructions)

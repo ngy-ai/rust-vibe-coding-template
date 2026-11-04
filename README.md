@@ -83,7 +83,7 @@ flutter_rust_bridge_codegen generate
 | `cargo fmt --check` | II |
 | `cargo clippy --all-targets --all-features -- -D warnings` | II |
 | `cargo machete`（未使用依赖） | II |
-| `cargo test --all-targets --all-features` | III |
+| `cargo test --all-features`（bench 目标交给 perf job） | III |
 | `cargo clippy -p app-desktop`（独立 Windows job） | II |
 | `flutter analyze` + `flutter test` + 绑定漂移检查（独立 mobile job） | III |
 | `flutter build apk --debug`（独立 android job，含 NDK 交叉编译） | III |
@@ -102,7 +102,7 @@ flutter_rust_bridge_codegen generate
 ```bash
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
-cargo test --all-targets --all-features
+cargo test --all-features        # 不加 --all-targets：会误跑需要 runner 的 iai 基准
 cargo machete
 cargo deny check
 ```
