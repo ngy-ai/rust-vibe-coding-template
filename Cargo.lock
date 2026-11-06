@@ -276,7 +276,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
 name = "app-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "app-core",
@@ -287,7 +287,7 @@ dependencies = [
 
 [[package]]
 name = "app-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "criterion",
  "iai-callgrind",
@@ -297,7 +297,7 @@ dependencies = [
 
 [[package]]
 name = "app-desktop"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "app-core",
  "gpui-kit",
@@ -307,7 +307,7 @@ dependencies = [
 
 [[package]]
 name = "app-server"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "app-core",
@@ -325,7 +325,7 @@ dependencies = [
 
 [[package]]
 name = "app_mobile"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "app-core",
