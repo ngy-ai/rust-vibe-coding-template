@@ -93,6 +93,19 @@ jobs:
       - name: Test the desktop client
         run: cargo test -p app-desktop
 
+  desktop-macos:
+    name: desktop (macos check)
+    # 桌面端只在 Windows 上跑 clippy，但它的依赖树在 macOS 上会换一套（gpui-pre-macos）。
+    # v0.1.0 的发布就是在这里炸的：macOS 那份 crate 用了 stable 不接受的不稳定 API。
+    # 加一个只做 cargo check 的 job，让这类问题在 PR 阶段暴露，而不是等到打 tag。
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Check the desktop client on macOS
+        run: cargo check -p app-desktop
+
   mobile:
     name: mobile (flutter)
     runs-on: ubuntu-24.04
