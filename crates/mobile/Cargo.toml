@@ -6,6 +6,10 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
+# 不进发布流水线：移动端产出的是 cdylib/staticlib，没有可安装的二进制。
+[package.metadata.dist]
+dist = false
+
 [lib]
 # cdylib/staticlib 供 Android 与 iOS 链接；rlib 让 `cargo test` 与 clippy 也能跑。
 crate-type = ["cdylib", "staticlib", "lib"]

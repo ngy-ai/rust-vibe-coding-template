@@ -6,6 +6,11 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
+# 不进发布流水线：cargo-dist 默认会把 workspace 里所有成员都构建一遍，
+# 库没有可安装的产物，白白延长发布耗时。
+[package.metadata.dist]
+dist = false
+
 [dependencies]
 thiserror.workspace = true
 tracing.workspace = true
