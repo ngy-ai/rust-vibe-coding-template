@@ -6,6 +6,11 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
+# 不进发布流水线：桌面端依赖 gpui 的平台服务，跨平台构建成本高，
+# 且当前 gpui 版本在发布 runner 的 stable 工具链上编译不过。
+[package.metadata.dist]
+dist = false
+
 [dependencies]
 app-core.workspace = true
 gpui-kit.workspace = true
