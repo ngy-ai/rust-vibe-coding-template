@@ -167,8 +167,13 @@ git tag v0.1.0 && git push origin v0.1.0   # 打 tag 触发发布
 可分发目标只有两个二进制：`app-cli` 与 `app-server`。移动端是库（`cdylib`），桌面端依赖 gpui 的
 平台服务，都不进发布流水线。
 
-产物是五个目标三元组的归档 + source tarball + sha256（Windows 用 zip，其余 tar.xz），
+产物是三个目标三元组的归档 + source tarball + sha256（Linux 双架构 tar.xz、Windows x86_64 zip），
 发布到 GitHub Releases。版本号取自 workspace 的 `version`，tag 必须形如 `vX.Y.Z`。
+
+**暂时没有 macOS 产物**：cargo-dist 构建时会编译整个 workspace，而 `app-desktop` 依赖的
+`gpui-pre-macos` 使用 stable 不接受的不稳定 API（E0658）。可选方案只有两个——给桌面端换
+nightly（污染整个 workspace 的工具链），或把桌面端拆出 workspace（结构改动）。在做出决定之前，
+发布只覆盖 Linux 与 Windows；补齐时在 `dist-workspace.toml` 的 `targets` 里加回两个 darwin 三元组。
 
 ## 项目规范
 
