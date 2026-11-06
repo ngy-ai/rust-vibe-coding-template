@@ -10,4 +10,9 @@ ci = "github"
 # The installers to generate for each app
 installers = []
 # Target platforms to build apps for (Rust target-triple syntax)
-targets = ["aarch64-apple-darwin", "aarch64-unknown-linux-gnu", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+#
+# 为什么没有 macOS：cargo-dist 构建时会编译整个 workspace，而 workspace 里的 app-desktop
+# 依赖 gpui-pre-macos，那份 crate 使用 stable 不接受的不稳定 API（E0658）。要么给桌面端
+# 换 nightly（会污染整个 workspace 的工具链），要么把桌面端拆出 workspace（结构改动）。
+# 在做出那个决定之前，发布只覆盖 Linux 与 Windows；补 macOS 时这里加回两个 darwin 三元组。
+targets = ["aarch64-unknown-linux-gnu", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
