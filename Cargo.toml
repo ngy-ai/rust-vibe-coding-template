@@ -24,7 +24,7 @@ app-core = { path = "crates/core" }
 anyhow = "1"
 axum = "0.8"
 clap = { version = "4", features = ["derive"] }
-gpui-kit = "0.8"
+gpui-kit = "0.9"
 http-body-util = "0.1"
 ngy-utils-tracing = "0.7"
 serde = { version = "1", features = ["derive"] }
